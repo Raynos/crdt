@@ -26,7 +26,9 @@
     "mux-demux": "~3.2",
     "autonode": "0.0.0",
     "optimist": "~0.3.4",
-    "delta-stream": "~0.1.0"
+    "delta-stream": "~0.1.0",
+    "connect": "~2.4.4",
+    "shoe": "0.0.5"
   },
   "optionalDependencies": {}
 }
