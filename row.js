@@ -4,6 +4,7 @@
 
 var inherits     = require('util').inherits
 var EventEmitter = require('events').EventEmitter
+var DeltaStream = require("delta-stream")
 
 module.exports = Row
 
@@ -55,3 +56,22 @@ Row.prototype.toJSON = function () {
   return this.state
 }
 
+Row.prototype.createStream = function () {
+  var row = this
+    , stream = DeltaStream(row.id)
+    
+  stream.other.on("data", function (data) {
+    var source = data[2]
+      , changes = data[0]
+
+    if (source !== "local") {
+      row._set(data[0], data[2])
+    }
+  })
+
+  row.on("update", function (data, changes, source) {
+    stream.other.write([changes, data[2], source])
+  })
+
+  return stream
+}

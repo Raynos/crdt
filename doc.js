@@ -154,7 +154,7 @@ Doc.prototype.update = function (update, source) {
   
   if(!emit) return
 
-  row.emit('update', update, changed)
+  row.emit('update', update, changed, source)
   row.emit('changes', changes, changed)
   row.emit('change', changed) //installing this in paralel, so tests still pass.
   //will depreciate the old way later.
