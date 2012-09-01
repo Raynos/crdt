@@ -4,7 +4,7 @@
   so that users don't feel lonely.
 */
 
-var crdt = require('crdt')
+var crdt = require('../../index')
 
 module.exports =
 function (doc) {
@@ -30,13 +30,13 @@ function (doc) {
 
   mice.on('add', function (m) {
     console.log('ADD', m)
-    var pointer = 
+    var pointer =
     $('<span class=pointer>' + m.id +'</span>')
       .css({position: 'absolute'})
 
     $('body').append(pointer)
 
-    m.on('update', function () {
+    m.on('change', function () {
       console.log(m.get('id'), m.get('x'), m.get('y'), m.get('in'))
       pointer.css({
         left: m.get('x')

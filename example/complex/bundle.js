@@ -7,7 +7,7 @@
     var cached = require.cache[resolved];
     var res = cached? cached.exports : mod();
     return res;
-};
+}
 
 require.paths = [];
 require.modules = {};
@@ -151,14 +151,7 @@ require.alias = function (from, to) {
         ;
         
         var require_ = function (file) {
-            var requiredModule = require(file, dirname);
-            var cached = require.cache[require.resolve(file, dirname)];
-
-            if (cached && cached.parent === null) {
-                cached.parent = module_;
-            }
-
-            return requiredModule;
+            return require(file, dirname);
         };
         require_.resolve = function (name) {
             return require.resolve(name, dirname);
@@ -166,13 +159,7 @@ require.alias = function (from, to) {
         require_.modules = require.modules;
         require_.define = require.define;
         require_.cache = require.cache;
-        var module_ = {
-            id : filename,
-            filename: filename,
-            exports : {},
-            loaded : false,
-            parent: null
-        };
+        var module_ = { exports : {} };
         
         require.modules[filename] = function () {
             require.cache[filename] = module_;
@@ -185,7 +172,6 @@ require.alias = function (from, to) {
                 filename,
                 process
             );
-            module_.loaded = true;
             return module_.exports;
         };
     };
@@ -378,100 +364,9 @@ process.binding = function (name) {
 })();
 });
 
-require.define("vm",function(require,module,exports,__dirname,__filename,process){module.exports = require("vm-browserify")});
+require.define("/Documents/crdt/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
 
-require.define("/node_modules/vm-browserify/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
-
-require.define("/node_modules/vm-browserify/index.js",function(require,module,exports,__dirname,__filename,process){var Object_keys = function (obj) {
-    if (Object.keys) return Object.keys(obj)
-    else {
-        var res = [];
-        for (var key in obj) res.push(key)
-        return res;
-    }
-};
-
-var forEach = function (xs, fn) {
-    if (xs.forEach) return xs.forEach(fn)
-    else for (var i = 0; i < xs.length; i++) {
-        fn(xs[i], i, xs);
-    }
-};
-
-var Script = exports.Script = function NodeScript (code) {
-    if (!(this instanceof Script)) return new Script(code);
-    this.code = code;
-};
-
-Script.prototype.runInNewContext = function (context) {
-    if (!context) context = {};
-    
-    var iframe = document.createElement('iframe');
-    if (!iframe.style) iframe.style = {};
-    iframe.style.display = 'none';
-    
-    document.body.appendChild(iframe);
-    
-    var win = iframe.contentWindow;
-    
-    forEach(Object_keys(context), function (key) {
-        win[key] = context[key];
-    });
-     
-    if (!win.eval && win.execScript) {
-        // win.eval() magically appears when this is called in IE:
-        win.execScript('null');
-    }
-    
-    var res = win.eval(this.code);
-    
-    forEach(Object_keys(win), function (key) {
-        context[key] = win[key];
-    });
-    
-    document.body.removeChild(iframe);
-    
-    return res;
-};
-
-Script.prototype.runInThisContext = function () {
-    return eval(this.code); // maybe...
-};
-
-Script.prototype.runInContext = function (context) {
-    // seems to be just runInNewContext on magical context objects which are
-    // otherwise indistinguishable from objects except plain old objects
-    // for the parameter segfaults node
-    return this.runInNewContext(context);
-};
-
-forEach(Object_keys(Script.prototype), function (name) {
-    exports[name] = Script[name] = function (code) {
-        var s = Script(code);
-        return s[name].apply(s, [].slice.call(arguments, 1));
-    };
-});
-
-exports.createScript = function (code) {
-    return exports.Script(code);
-};
-
-exports.createContext = Script.createContext = function (context) {
-    // not really sure what this one does
-    // seems to just make a shallow copy
-    var copy = {};
-    if(typeof context === 'object') {
-        forEach(Object_keys(context), function (key) {
-            copy[key] = context[key];
-        });
-    }
-    return copy;
-};
-});
-
-require.define("/example/complex/node_modules/crdt/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
-
-require.define("/example/complex/node_modules/crdt/index.js",function(require,module,exports,__dirname,__filename,process){//index
+require.define("/Documents/crdt/index.js",function(require,module,exports,__dirname,__filename,process){//index
 'use strict';
 
 var inherits     = require('util').inherits
@@ -480,7 +375,7 @@ var u            = require('./utils')
 
 exports = module.exports = require('./doc')
 exports.Row              = require('./row')
-exports.createStream     = require('./stream').createStream
+
 exports.sync             = sync
 exports.Set              = require('./set')
 exports.Seq              = require('./seq')
@@ -488,11 +383,15 @@ exports.Seq              = require('./seq')
 exports.Doc = exports
 
 function sync(a, b) {
-  var as = exports.createStream(a)
-  var bs = exports.createStream(b)
+  var as = a.createStream()
+  var bs = b.createStream()
   return as.pipe(bs).pipe(as)
 }
 
+
+exports.createStream = function (doc, opts) {
+  return doc.createStream(opts)
+}
 });
 
 require.define("util",function(require,module,exports,__dirname,__filename,process){var events = require('events');
@@ -982,7 +881,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 });
 
-require.define("/example/complex/node_modules/crdt/utils.js",function(require,module,exports,__dirname,__filename,process){'use strict';
+require.define("/Documents/crdt/utils.js",function(require,module,exports,__dirname,__filename,process){'use strict';
 var b = require('between')
 
 exports.clone = 
@@ -1033,9 +932,9 @@ function concat(to, from) {
 }
 });
 
-require.define("/example/complex/node_modules/crdt/node_modules/between/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
+require.define("/Documents/crdt/node_modules/between/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
 
-require.define("/example/complex/node_modules/crdt/node_modules/between/index.js",function(require,module,exports,__dirname,__filename,process){
+require.define("/Documents/crdt/node_modules/between/index.js",function(require,module,exports,__dirname,__filename,process){
 exports = module.exports = function (chars, exports) {
 
   chars = chars ||
@@ -1135,15 +1034,15 @@ exports = module.exports = function (chars, exports) {
 exports(null, module.exports)
 });
 
-require.define("/example/complex/node_modules/crdt/doc.js",function(require,module,exports,__dirname,__filename,process){var inherits     = require('util').inherits
-var EventEmitter = require('events').EventEmitter
+require.define("/Documents/crdt/doc.js",function(require,module,exports,__dirname,__filename,process){var inherits     = require('util').inherits
 var Row          = require('./row')
-var stream       = require('./stream')
 var u            = require('./utils')
 var Set          = require('./set')
 var Seq          = require('./seq')
+var Scuttlebutt  = require('scuttlebutt')
+var EventEmitter = require('events').EventEmitter
 
-inherits(Doc, EventEmitter)
+inherits(Doc, Scuttlebutt)
 
 module.exports = Doc
 //doc
@@ -1184,19 +1083,21 @@ function Doc (id) {
   //the id of the doc refers to the instance.
   //that is, to the node.
   //it's used to identify a node 
-  this.id = id || '#' + Math.round(Math.random()*1000)
+//  this.id = id || '#' + Math.round(Math.random()*1000)
   this.rows = {}
   this.hist = {}
   this.recieved = {}
   this.sets = new EventEmitter() //for tracking membership of sets.
+  this.setMaxListeners(Infinity)
+  this.sets.setMaxListeners(Infinity)
+  Scuttlebutt.call(this, id)
 }
 
 Doc.prototype.add = function (initial) {
-
   if(!initial.id)
     throw new Error('id is required')
   var r = this._add(initial.id, 'local')
-  r._set(initial, 'local')
+  r.set(initial)
   return r
 }
 
@@ -1207,12 +1108,12 @@ Doc.prototype._add = function (id, source) {
   if(this.rows[id])
     return this.rows[id]
 
-  var r = id instanceof Row ? id : new Row(id)
+  var r = Row.isRow(id) ? id : Row(id)
   this.rows[r.id] = r
 
-  function track (changes, source) {
-    var update = [r.id, changes, u.timestamp(), doc.id]
-    doc.update(update, source)
+  function track (changes) {
+//    var update = [r.id, changes, u.timestamp(), doc.id]
+    doc.localUpdate(r.id, changes)
   }
 
   r.on('preupdate', track)
@@ -1230,7 +1131,8 @@ Doc.prototype.timeUpdated = function (row, key) {
 
 Doc.prototype.set = function (id, change) {
   var r = this._add(id, 'local')
-  return r.set(change)
+  r.set(change)
+  return r
 }
 
 /*
@@ -1244,12 +1146,11 @@ Doc.prototype.set = function (id, change) {
   if so, replace that keys hist.
 */
 
-Doc.prototype.update = function (update, source) {
+Doc.prototype.applyUpdate = function (update, source) {
 
   //apply an update to a row.
   //take into account histroy.
   //and insert the change into the correct place.
- 
   var id      = update[0]
   var changes = update[1]
   var timestamp = update[2]
@@ -1263,10 +1164,11 @@ Doc.prototype.update = function (update, source) {
 
 
   //remember the most recent update from each node.
-  if(!this.recieved[from] || this.recieved[from] < timestamp)
-    this.recieved[from] = timestamp
+  //now handled my scuttlebutt.
+//  if(!this.recieved[from] || this.recieved[from] < timestamp)
+//    this.recieved[from] = timestamp
 
-  if(!row.validate(changes)) return
+//  if(!row.validate(changes)) return
   
   for(var key in changes) {
     var value = changes[key]
@@ -1277,42 +1179,33 @@ Doc.prototype.update = function (update, source) {
     }
   }
 
-/*
-  probably, there may be mulitple sets that listen to the same key, 
-  but activate on different values...
+//  probably, there may be mulitple sets that listen to the same key, 
+//  but activate on different values...
+//
+//  hang on, in the mean time, I will probably only be managing n < 10 sets. 
+//  at once, 
 
-  hang on, in the mean time, I will probably only be managing n < 10 sets. 
-  at once, 
-*/
-
-  u.merge(row.state, changed)
   for(var k in changed)
-    this.sets.emit(k, row, changed) 
+    this.sets.emit(k, row, changed)
+
+  row._set(changed)
   
   if(!emit) return
-
-  row.emit('update', update, changed)
-  row.emit('changes', changes, changed)
-  row.emit('change', changed) //installing this in paralel, so tests still pass.
+  
+  this.emit('_update', update)
   //will depreciate the old way later.
   this.emit('update', update, source)   //rename this event to 'data' or 'diff'?
   this.emit('row_update', row)          //rename this event to 'update'
 }
 
-Doc.prototype.history = function (id) {
-  if(!id) {
-    var h = []
-    for (var id in this.hist) {
-      u.concat(h, this.history(id))
-    }
-    return h.sort(order)
-  }
-
+Doc.prototype.history = function (sources) {
   var h = []
-  var hist = this.hist[id]
-  for (var k in hist) {
-    if(!~h.indexOf(hist[k]))
-      h.push(hist[k])
+  for (var id in this.hist) {
+    var hist = this.hist[id]
+    for (var k in hist) {
+      if(!~h.indexOf(hist[k]) && Scuttlebutt.filter(hist[k], sources))
+        h.push(hist[k])
+    }
   }
   return h.sort(order)
 }
@@ -1343,321 +1236,669 @@ Doc.prototype.get = function (id) {
   return this.rows[id] = this.rows[id] || this._add(new Row(id), 'local')
 }
 
-Doc.prototype.createStream = function (opts) {
-  return stream.createStream(this, opts)
-}
-
-Doc.prototype.createWriteStream = function (opts) {
-  return stream.createWriteStream(this, opts)
-}
-
-Doc.prototype.createReadStream = function (opts) {
-  return stream.createReadStream(this, opts)
-}
 });
 
-require.define("/example/complex/node_modules/crdt/row.js",function(require,module,exports,__dirname,__filename,process){//row
+require.define("/Documents/crdt/row.js",function(require,module,exports,__dirname,__filename,process){//row
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 'use strict';
 
-var inherits     = require('util').inherits
-var EventEmitter = require('events').EventEmitter
+var Delta = require("delta-stream")
+
+Row.isRow = isRow
 
 module.exports = Row
 
-inherits(Row, EventEmitter)
-
 function Row (id) {
-  this.id = id
-  this.state = {id: id}
-}
+  var delta = Delta(id)
 
-Row.prototype.set = function (changes, v) {
-  if(arguments.length == 2) {
-    var k = changes 
-    changes = {}
-    changes[k] = v
+  delta._set = delta.set
+
+  delta.validate = function (changes) {
+    try {
+      delta.emit('validate', changes)
+      return true
+    } catch (e) {
+      console.error('validation', e.message)
+      return false
+    }
   }
 
-  if(changes.id && changes.id !== this.state.id)
-    throw new Error('id cannot be changed')
+  delta.set = function (key, value) {
+    var changes = key
+    if (typeof key === 'string') {
+      changes = {}
+      changes[key] = value
+    }
+    delta.emit('preupdate', changes)
+  }
 
-  this._set(changes, 'local')  
+  return delta
+}
+
+function isRow(r) {
+    return r.set && r.get && r.validate && r._update
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index"}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/index.js",function(require,module,exports,__dirname,__filename,process){var Scuttlebutt = require("scuttlebutt")
+    , updateIsRecent = Scuttlebutt.updateIsRecent
+    , iterators = require("iterators")
+    , reduce = iterators.reduceSync
+    , forEach = iterators.forEachSync
+
+module.exports = Delta
+
+/*
+    Protocol is [key, value, source, timestamp]
+*/
+function Delta(id) {
+    var scutt = Scuttlebutt(id)
+        , updates = {}
+        , state = { id: scutt.id }
+
+    scutt.applyUpdate = applyUpdate
+    // history is a global variable -.-
+    scutt.history = $history
+    scutt.set = set
+    scutt.get = get
+    scutt.has = has
+    // stupid tokens
+    scutt.delete = $delete
+    scutt.toJSON = toJSON
+
+    return scutt
+
+    function applyUpdate(update) {
+        var key = update[0]
+            , value = update[1]
+            , recentUpdate = updates[key]
+
+        // If the most recent update for that key is newer then the incoming
+        // update. Then ignore it
+        if (recentUpdate && recentUpdate[2] > update[2]) {
+            return
+        }
+
+        updates[key] = update
+
+        if (value === undefined) {
+            delete state[key]
+        } else {
+            state[key] = value
+        }
+
+        scutt.emit("change", key, value)
+        scutt.emit("change:" + key, value)
+
+        return true
+    }
+
+    function $history(sources) {
+        return reduce(updates, isRecent, sources, []).sort(byTimestamp)
+    }
+
+    function set(key, value) {
+        if (key === "id" && value !== scutt.id) {
+            throw Error("id cannot be changed")
+        }
+
+        if (typeof key === "string") {
+            scutt.localUpdate(key, value)
+        } else {
+            forEach(key, setKeyValue)
+        }
+    }
+
+    function setKeyValue(value, key) {
+        set(key, value)
+    }
+
+    function get(key) {
+        return state[key]
+    }
+
+    function has(key) {
+        return key in state
+    }
+
+    function $delete(key) {
+        set(key, undefined)
+    }
+
+    function toJSON() {
+        return state
+    }
+}
+
+function isRecent(acc, update) {
+    var sources = this
+
+    if (updateIsRecent(update, sources)) {
+        acc.push(update)
+    }
+
+    return acc
+}
+
+function byTimestamp(a, b) {
+    return a[2] - b[2]
+}});
+
+require.define("/Documents/crdt/node_modules/scuttlebutt/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
+
+require.define("/Documents/crdt/node_modules/scuttlebutt/index.js",function(require,module,exports,__dirname,__filename,process){//really simple data replication.
+
+var EventEmitter = require('events').EventEmitter
+var i = require('iterate')
+var duplex = require('duplex')
+var inherits = require('util').inherits
+var serializer = require('stream-serializer')
+var u = require('./util')
+var ReadableStream = require('readable-stream')
+
+exports = 
+module.exports = Scuttlebutt
+
+exports.createID = u.createID
+exports.updateIsRecent = u.filter
+exports.filter = u.filter
+exports.timestamp = u.timestamp
+
+function dutyOfSubclass() {
+  throw new Error('method must be implemented by subclass')
+}
+
+function validate (data) {
+  //must be an 4 element array
+  //string, *, string, number
+  //log a message and ignore if invalid.
+  function error () {
+    console.error('invalid update', data)
+  }
+  var key = data[0], ts = data[2], source = data[3]
+
+  /*console.log(!Array.isArray(data) 
+    , data.length !== 4 
+    , 'string'    !== typeof key
+    , 'string'    !== typeof source
+    , 'number'    !== typeof ts
+  )*/
+
+  if(  !Array.isArray(data) 
+    || data.length !== 4 
+    || 'string'    !== typeof key
+    || 'string'    !== typeof source
+    || 'number'    !== typeof ts
+  ) 
+    return error(), false
+
+  return true
+}
+
+inherits (Scuttlebutt, EventEmitter)
+
+function Scuttlebutt (id) {
+  if(!(this instanceof Scuttlebutt)) return new Scuttlebutt(id)
+  this.sources = {}
+  this.id = id = id || u.createID()
+}
+
+var sb = Scuttlebutt.prototype
+
+var emit = EventEmitter.prototype.emit
+
+sb.applyUpdate = dutyOfSubclass
+sb.history      = dutyOfSubclass
+
+sb.localUpdate = function (key, value) {
+  this._update([key, value, u.timestamp(), this.id])
   return this
 }
 
-Row.prototype.validate = function (changes) {
-  try {
-    this.emit('validate', changes)
+//checks whether this update is valid.
+
+sb._update = function (update) {
+  var ts = update[2]
+  var source = update[3]
+
+  //if this message is old for it's source,
+  //ignore it. it's out of order.
+  //each node must emit it's changes in order!
+  
+  var latest = this.sources[source]
+  if(latest && latest >= ts)
+    return emit.call(this, 'old_data', update), false
+
+  this.sources[source] = ts
+
+  //check if this message is older than
+  //the value we already have.
+  //do nothing if so
+  //emit an 'old-data' event because i'll want to track how many
+  //unnecessary messages are sent.
+  if(this.applyUpdate(update)) {
+    emit.call(this, '_update', update)
     return true
-  } catch (e) {
-    console.error('validation', e.message)
-    return false
-  } 
+  }
+
+  //key, value, timestamp, source
+  return false
 }
 
-Row.prototype._set = function (changes, source) {
+sb.createStream = function (opts) {
+  var self = this
+  //the sources for the remote end.
+  var sources = {}, other
+  var d = duplex()
+  var outer = serializer(opts && opts.wrapper)(d)
+  outer.inner = d
+  d
+    .on('write', function (data) {
+    //if it's an array, it's an update.
+    //if it's an object, it's a scuttlebut digest.
+      if(Array.isArray(data)) {
+        if(validate(data))
+          return self._update(data)
+      }
+      else if('object' === typeof data && data) {
+        //when the digest is recieved from the other end,
+        //send the history.
+        //merge with the current list of sources.
+        sources = data
+        i.each(self.history(sources), d.emitData.bind(d))
+        outer.emit('sync')
+      }
+    }).on('ended', function () { d.emitEnd() })
+    .on('close', function () {
+      self.removeListener('data', onUpdate)
+    })
 
-  //the change is applied by the Doc!
-  this.emit('preupdate', changes, source)
-  return this
+  function onUpdate (update) { //key, value, source, ts) {
+    if(!u.filter(update, sources))
+      return
+
+    //if I put this after source[source]= ... it breaks tests
+    d.emitData(update)
+
+    //really, this should happen before emitting.
+    var ts = update[2]
+    var source = update[3]
+    sources[source] = ts
+  }
+  d.emitData(self.sources)
+  self.on('_update', onUpdate)
+  return outer
 }
 
-Row.prototype.get = function (key) {
-  if(key)
-    return this.state[key]
-  return this.state
+//createReadStream -- for persisting.
+
+sb.createReadStream = function (opts) {
+  opts = opts || {}
+
+  //write this.id
+  //then write the histroy.
+  //then, if opts.tail
+  //listen for updates, else emit 'end'
+
+  var out = this.history()
+  out.unshift(this.id)
+
+  var wrapper = ({
+    json: function (e) { return JSON.stringify(e) + '\n' },
+    raw: function (e) { return e }
+  }) [opts.wrapper || 'json']
+
+  var rs = new ReadableStream()
+  rs.read = function () {
+    var data = out.shift()
+    console.log('>>', data)
+    if(!data && !opts.tail)
+      return this.emit('end'), null
+    
+    return wrapper(data)
+  }
+
+  if(opts.tail) {
+    this.on('_update', function (update) {
+      out.push(update)
+      rs.emit('readable')
+    })
+  }
+
+  return rs
 }
 
-Row.prototype.toJSON = function () {
-  return this.state
+sb.createWriteStream = function (opts) {
+  opts = opts || {}
+  var Stream = require('stream')
+  var ws = new Stream()
+  var self = this, first = true
+  ws.writable = true
+  ws.write = function (data) {
+    if(!this.writable) return
+    if('string' === typeof data)
+      return self.id = data, true
+    first = false
+    self.applyUpdate(data)
+    return true
+  }
+  ws.end = function () {
+    this.writable = false
+    self.sync = true
+    self.emit('sync')
+  }
+  ws.destroy = function () {
+    this.writable = false
+    this.emit('close')
+  }
+
+  return serializer(opts.wrapper)(ws)
+}
+});
+
+require.define("/Documents/crdt/node_modules/scuttlebutt/node_modules/iterate/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
+
+require.define("/Documents/crdt/node_modules/scuttlebutt/node_modules/iterate/index.js",function(require,module,exports,__dirname,__filename,process){
+//
+// adds all the fields from obj2 onto obj1
+//
+
+var each = exports.each = function (obj,iterator){
+ var keys = Object.keys(obj)
+ keys.forEach(function (key){
+  iterator(obj[key],key,obj) 
+ })
+}
+
+var RX = /sadf/.constructor
+function rx (iterator ){
+  return iterator instanceof RX ? function (str) { 
+      var m = iterator.exec(str)
+      return m && (m[1] ? m[1] : m[0]) 
+    } : iterator
+}
+
+var times = exports.times = function () {
+  var args = [].slice.call(arguments)
+    , iterator = rx(args.pop())
+    , m = args.pop()
+    , i = args.shift()
+    , j = args.shift()
+    , diff, dir
+    , a = []
+    
+    i = 'number' === typeof i ? i : 1
+    diff = j ? j - i : 1
+    dir = i < m
+    if(m == i)
+      throw new Error('steps cannot be the same: '+m+', '+i)
+  for (; dir ? i <= m : m <= i; i += diff)
+    a.push(iterator(i))
+  return a
+}
+
+var map = exports.map = function (obj, iterator){
+  iterator = rx(iterator)
+  if(Array.isArray(obj))
+    return obj.map(iterator)
+  if('number' === typeof obj)
+    return times.apply(null, [].slice.call(arguments))  
+  //return if null ?  
+  var keys = Object.keys(obj)
+    , r = {}
+  keys.forEach(function (key){
+    r[key] = iterator(obj[key],key,obj) 
+  })
+  return r
+}
+
+var findReturn = exports.findReturn = function (obj, iterator) {
+  iterator = rx(iterator)
+  if(obj == null)
+    return
+  var keys = Object.keys(obj)
+    , l = keys.length
+  for (var i = 0; i < l; i ++) {
+    var key = keys[i]
+      , value = obj[key]
+    var r = iterator(value, key)
+    if(r) return r
+  }
+}
+
+var find = exports.find = function (obj, iterator) { 
+  iterator = rx(iterator)
+  return findReturn (obj, function (v, k) {
+    var r = iterator(v, k)
+    if(r) return v
+  })
+}
+
+var findKey = exports.findKey = function (obj, iterator) { 
+  iterator = rx(iterator)
+  return findReturn (obj, function (v, k) {
+    var r = iterator(v, k)
+    if(r) return k
+  })
+}
+
+var filter = exports.filter = function (obj, iterator){
+  iterator = rx (iterator)
+
+  if(Array.isArray(obj))
+    return obj.filter(iterator)
+  
+  var keys = Object.keys(obj)
+    , r = {}
+  keys.forEach(function (key){
+    var v
+    if(iterator(v = obj[key],key,obj))
+      r[key] = v
+  })
+  return r 
+}
+
+var mapKeys = exports.mapKeys = function (ary, iterator){
+  var r = {}
+  iterator = rx(iterator)
+  each(ary, function (v,k){
+    r[v] = iterator(v,k)
+  })
+  return r
+}
+
+
+var mapToArray = exports.mapToArray = function (ary, iterator){
+  var r = []
+  iterator = rx(iterator)
+  each(ary, function (v,k){
+    r.push(iterator(v,k))
+  })
+  return r
+}
+
+var path = exports.path = function (object, path) {
+
+  for (var i in path) {
+    if(object == null) return undefined
+    var key = path[i]
+    object = object[key]
+  }
+  return object
+}
+
+/*
+NOTE: naive implementation. 
+`match` must not contain circular references.
+*/
+
+var setPath = exports.setPath = function (object, path, value) {
+
+  for (var i in path) {
+    var key = path[i]
+    if(object[key] == null) object[key] = ( 
+      i + 1 == path.length ? value : {}
+    )
+    object = object[key]
+  }
 }
 
 });
 
-require.define("/example/complex/node_modules/crdt/stream.js",function(require,module,exports,__dirname,__filename,process){'use strict';
-var Stream       = require('stream')
-var u            = require('./utils')
-var serializer   = require('stream-serializer')
+require.define("/Documents/crdt/node_modules/scuttlebutt/node_modules/duplex/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
 
-exports.createStream = createStream
-exports.createReadStream = createReadStream
-exports.createWriteStream = createWriteStream
-//stream
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+require.define("/Documents/crdt/node_modules/scuttlebutt/node_modules/duplex/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require('stream')
+
 /*
-  to support scuttlebutt reconciliation, begin stream with a greeting
-  that gives timestamp of data last recieved from each node.
+  lemmy think...
 
-  http://www.cs.cornell.edu/home/rvr/papers/flowgossip.pdf 
+    pause() and resume() must prevent data from being emitted.
 
-  pass in mode = scuttlebutt? 
+  write controls 'drain', and the return value.
 
-  it's necessary to wait for the first greeting but that isn't 
-  gonna happen when writing to disk.
+  idea:
 
-  in that case, act a little different...
+    write -> emit('write')
 
-  so: nodes should communicate with the disk via
-  createWriteStream createReadStream,
-  and communicate with each other via
-  createStream
+    on('pause') --> writePause = true
+    if(writePause) --> wirte() == false
+    on('drain') --> writePause = false
 
-  when ever I open a stream to disk, I either write or read.
-  (usally switching when the stream ends)
-
-  but if I'm communicating, that is typically a non-ending stream.
-  also, when writing to disk, I want to save the id.
-  so should begin by writing a {iam: id} message,
-  and then read that in when reading.
+    pause() -> paused = true
+    resume() -> paused = false, drain()
+    sendData(data) -> push onto buffer or emit.
+    sendEnd()      -> queue end after buffer clears.  
 */
 
-var streams = 1
-function createStream (doc, opts) {
-  var id = streams++ //used locally so to prevent writing update back to their source
-  var s = new Stream() 
-  s.writable = s.readable = true
-  opts = opts || {}
-  var queue = [], follow
-  var other, recieved = {}
-
-  function enqueue() {
-    process.nextTick(s.flush)
+module.exports = function (write, end) {
+  var stream = new Stream() 
+  var buffer = [], ended = false, destroyed = false, emitEnd
+  stream.writable = stream.readable = true
+  stream.paused = false
+  stream.buffer = buffer
+  
+  stream.writePause = false
+  stream
+    .on('pause', function () {
+      stream.writePause = true
+    })
+    .on('drain', function () {
+      stream.writePause = false
+    })
+   
+  function destroySoon () {
+    process.nextTick(stream.destroy.bind(stream))
   }
 
-  function onUpdate (update, source) {
-    if(source === id) return
-      queue.push(update)
-    enqueue()
+  if(write)
+    stream.on('write', write)
+  if(end)
+    stream.on('ended', end)
+
+  //destroy the stream once both ends are over
+
+  stream.once('end', function () { 
+    stream.readable = false
+    if(!stream.writable)
+      stream.destroy()
+  })
+
+  stream.once('ended', function () { 
+    stream.writable = false
+    if(!stream.readable)
+      stream.destroy()
+  })
+
+  // this is the default write method,
+  // if you overide it, you are resposible
+  // for pause state.
+
+  stream.emitData =
+  stream.sendData = function (data) {
+    if(!stream.paused && !buffer.length)
+      stream.emit('data', data)
+    else 
+      buffer.push(data) 
+    return !(stream.paused || buffer.length)
   }
 
-  function onSync () {
-    //emitting histroy must be deferred because downstream
-    //may not yet exist.  
-    //send scuttlebutt greeting
-
-    queue.push({iam: doc.id, iknow: doc.recieved})
-    u.concat(queue, doc.history(opts.id)) 
-    enqueue()
-    follow = opts.id ? doc.get(opts.id) : doc
-    follow.on('update', onUpdate)
-    doc.removeListener('sync', onSync)
+  stream.emitEnd =
+  stream.sendEnd = function (data) {
+    if(data) stream.write(data)
+    if(emitEnd) return
+    emitEnd = true
+    //destroy is handled above.
+    stream.drain()
   }
 
-  s.pipe = function (other) {
-    //if _syncCount == 1 that means we are loading from the disk 
-    //for the first time delay sending messages until then.
-    //or should I remove this feature? it seriously won't happen much.
-    //we'll see if it causes problems.
-
-    if(doc.sync || doc._syncCount !== 1) onSync()
-    else doc.on('sync', onSync)
-    return Stream.prototype.pipe.call(this, other)
+  stream.write = function (data) {
+    stream.emit('write', data)
+    return !stream.writePaused
   }
- 
-  s.flush = function () {
-    while(queue.length) {
-      var update = queue.shift()
-      //if message is scuttlebutt status
-      if(!Array.isArray(update))
-        s.emit('data', update)
-      else {
-        //if this has already been seen, do not send.
-        var timestamp = update[2]
-        var from      = update[3]
-        if(!recieved[from] || timestamp >= recieved[from])
-          s.emit('data', update)
+  stream.end = function () {
+    stream.writable = false
+    if(stream.ended) return
+    stream.ended = true
+    stream.emit('ended')
+  }
+  stream.drain = function () {
+    if(!buffer.length && !emitEnd) return
+    //if the stream is paused after just before emitEnd()
+    //end should be buffered.
+    while(!stream.paused) {
+      if(buffer.length) {
+        stream.emit('data', buffer.shift())
+        if(buffer.length == 0)
+          stream.emit('read-drain')
+      }
+      else if(emitEnd && stream.readable) {
+        stream.readable = false
+        stream.emit('end')
+        return
+      } else {
+        //if the buffer has emptied. emit drain.
+        return true
       }
     }
   }
-
-  s.write = function (data) {
-    /*data may also be an scuttlebutt reconciliation
-    message. in that case, use it to filter emits.
-    if data is an object, it's to filter updates.
-    remember it for later.
-    */
-    if(!Array.isArray(data)) {
-      other = data.iam
-      if(data.iknow)
-        for(var k in data.iknow)
-          recieved[k] = data.iknow[k] 
-    } else
-      doc.update(data, id)
-    return true
+  var started = false
+  stream.resume = function () {
+    //this is where I need pauseRead, and pauseWrite.
+    //here the reading side is unpaused,
+    //but the writing side may still be paused.
+    //the whole buffer might not empity at once.
+    //it might pause again.
+    //the stream should never emit data inbetween pause()...resume()
+    //and write should return !buffer.length
+    started = true
+    stream.paused = false
+    stream.drain() //will emit drain if buffer empties.
+    return stream
   }
 
-  s.end = function () {
-    //stream is disconnecting.
-    s.emit('end')
-    s.destroy()
+  stream.destroy = function () {
+    if(destroyed) return
+    destroyed = ended = true     
+    buffer.length = 0
+    stream.emit('close')
   }
-
-  s.destroy = function () {  
-    if(follow)
-      follow.removeListener('update', onUpdate)
-    doc.removeListener('sync', onSync)
-    s.emit('close')
+  var pauseCalled = false
+  stream.pause = function () {
+    started = true
+    stream.paused = true
+    return stream
   }
-
-
-  return serializer(opts.wrapper)(s)
+  stream.paused = true
+  process.nextTick(function () {
+    //unless the user manually
+    if(started) return
+    stream.resume()
+  })
+ 
+  return stream
 }
 
-function createReadStream(doc, opts) {
-  opts = opts || {}
-  if(opts.end !== false)
-    opts.end = true
-  var s = new Stream()
-  var queue = []
-
-  s.readable = true
-  s.writable = false
-
-  function onUpdate (data) {
-    queue.push(data)
-    enqueue()
-  }
-
-  s.pause = function () {
-    s.paused = true
-  }
-
-  s.resume = function () {
-    s.paused = false
-  }
-
-  function enqueue() {
-    process.nextTick(s.flush)
-  }
-
-  s.flush = function () {
-    while(queue.length && !s.paused)
-      s.emit('data', queue.shift())
-    if(opts.end && !queue.length && !s.paused && !s.ended) {
-      s.emit('end')
-      s.emit('close')
-      s.ended = true
-    }
-  }
-
-  s.destroy = function () { 
-    queue.length = 0
-    doc.removeListener('update', onUpdate)
-    s.ended = true
-    s.paused = false
-    s.readable = false
-  }
-
-  s.pipe = function (other) {
-    //emitting histroy must be deferred because downstream
-    //may not yet exist.  
-    //send scuttlebutt greeting
-    queue.push({iam: doc.id})
-
-    u.concat(queue, doc.history()) 
-    enqueue()
-    if(!opts.end)
-      doc.on('update', onUpdate)
-
-    return Stream.prototype.pipe.call(this, other)
-  }
-
-  return s 
-}
-
-function createWriteStream (doc, opts) {
-   
-  var s = new Stream()
-  s.writable = true
-  s.readable = false
-  var first = false
-
-  //if the doc has not been synced,
-  //mark it as syncing...
-  //hmm. that is what _syncCount does
-
-  doc._syncCount = doc._syncCount || 0
-
-  doc._syncCount ++
-
-  s.write = function (data) {    
-    if(s.ended)
-      throw new Error('stream has ended')
-    if(!first && data.iam){
-      doc.id = data.iam
-      first = true
-    } else
-      doc.update(data, 'local')
-  }
-
-  s.end = function (data) {
-    if(data)
-      s.write(data)
-    s.ended = true
-    s.emit('end')
-    /*
-      it may be desirable to sync to multiple sources.
-      just incase, keep count and do not set sync = true
-      unless you are the last one. 
-    */
-    if(--doc._syncCount === 0) {
-      doc.sync = true
-      doc.emit('sync')
-    }
-    s.emit('close') 
-  }
-
-  s.destroy = function () {
-    s.ended = true
-    s.writable = false
-    if(!s.closed)
-      s.emit('close')
-    s.closed = true
-  }
-
-  return s 
-}
 });
 
 require.define("stream",function(require,module,exports,__dirname,__filename,process){var events = require('events');
@@ -1781,9 +2022,9 @@ Stream.prototype.pipe = function(dest, options) {
 };
 });
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
+require.define("/Documents/crdt/node_modules/stream-serializer/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/index.js",function(require,module,exports,__dirname,__filename,process){
+require.define("/Documents/crdt/node_modules/stream-serializer/index.js",function(require,module,exports,__dirname,__filename,process){
 var es = require('event-stream')
 
 exports = module.exports = function (wrapper) {
@@ -1804,9 +2045,9 @@ exports.raw = function (stream) {
 
 });
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
+require.define("/Documents/crdt/node_modules/event-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/index.js",function(require,module,exports,__dirname,__filename,process){//filter will reemit the data if cb(err,pass) pass is truthy
+require.define("/Documents/crdt/node_modules/event-stream/index.js",function(require,module,exports,__dirname,__filename,process){//filter will reemit the data if cb(err,pass) pass is truthy
 
 // reduce is more tricky
 // maybe we want to group the reductions or emit progress updates occasionally
@@ -2203,9 +2444,9 @@ es.pipeable = function () {
 }
 });
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/node_modules/through/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
+require.define("/Documents/crdt/node_modules/event-stream/node_modules/through/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/node_modules/through/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require('stream')
+require.define("/Documents/crdt/node_modules/event-stream/node_modules/through/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require('stream')
 
 // through
 //
@@ -2272,9 +2513,9 @@ function through (write, end) {
 
 });
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/node_modules/from/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
+require.define("/Documents/crdt/node_modules/event-stream/node_modules/from/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/node_modules/from/index.js",function(require,module,exports,__dirname,__filename,process){
+require.define("/Documents/crdt/node_modules/event-stream/node_modules/from/index.js",function(require,module,exports,__dirname,__filename,process){
 var Stream = require('stream')
 
 // from
@@ -2338,9 +2579,9 @@ function from (source) {
 }
 });
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/node_modules/duplexer/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index"}});
+require.define("/Documents/crdt/node_modules/event-stream/node_modules/duplexer/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index"}});
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/node_modules/duplexer/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require("stream")
+require.define("/Documents/crdt/node_modules/event-stream/node_modules/duplexer/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require("stream")
     , writeMethods = ["write", "end", "destroy"]
     , readMethods = ["resume", "pause"]
     , readEvents = ["data", "close"]
@@ -2428,9 +2669,9 @@ function duplex(writer, reader) {
     }
 }});
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/node_modules/map-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
+require.define("/Documents/crdt/node_modules/event-stream/node_modules/map-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/node_modules/map-stream/index.js",function(require,module,exports,__dirname,__filename,process){//filter will reemit the data if cb(err,pass) pass is truthy
+require.define("/Documents/crdt/node_modules/event-stream/node_modules/map-stream/index.js",function(require,module,exports,__dirname,__filename,process){//filter will reemit the data if cb(err,pass) pass is truthy
 
 // reduce is more tricky
 // maybe we want to group the reductions or emit progress updates occasionally
@@ -2537,9 +2778,9 @@ module.exports = function (mapper) {
 
 });
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/node_modules/pause-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
+require.define("/Documents/crdt/node_modules/event-stream/node_modules/pause-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
 
-require.define("/example/complex/node_modules/crdt/node_modules/stream-serializer/node_modules/event-stream/node_modules/pause-stream/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require('stream')
+require.define("/Documents/crdt/node_modules/event-stream/node_modules/pause-stream/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require('stream')
 
 /*
   was gonna use through for this,
@@ -2617,11 +2858,7 @@ module.exports = function () {
 }
 });
 
-require.define("buffer",function(require,module,exports,__dirname,__filename,process){module.exports = require("buffer-browserify")});
-
-require.define("/node_modules/buffer-browserify/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js","browserify":"index.js"}});
-
-require.define("/node_modules/buffer-browserify/index.js",function(require,module,exports,__dirname,__filename,process){function SlowBuffer (size) {
+require.define("buffer",function(require,module,exports,__dirname,__filename,process){function SlowBuffer (size) {
     this.length = size;
 };
 
@@ -2635,118 +2872,6 @@ function toHex(n) {
   return n.toString(16);
 }
 
-function utf8ToBytes(str) {
-  var byteArray = [];
-  for (var i = 0; i < str.length; i++)
-    if (str.charCodeAt(i) <= 0x7F)
-      byteArray.push(str.charCodeAt(i));
-    else {
-      var h = encodeURIComponent(str.charAt(i)).substr(1).split('%');
-      for (var j = 0; j < h.length; j++)
-        byteArray.push(parseInt(h[j], 16));
-    }
-
-  return byteArray;
-}
-
-function asciiToBytes(str) {
-  var byteArray = []
-  for (var i = 0; i < str.length; i++ )
-    // Node's code seems to be doing this and not & 0x7F..
-    byteArray.push( str.charCodeAt(i) & 0xFF );
-
-  return byteArray;
-}
-
-function base64ToBytes(str) {
-  return require("base64-js").toByteArray(str);
-}
-
-SlowBuffer.byteLength = function (str, encoding) {
-  switch (encoding || "utf8") {
-    case 'hex':
-      return str.length / 2;
-
-    case 'utf8':
-    case 'utf-8':
-      return utf8ToBytes(str).length;
-
-    case 'ascii':
-      return str.length;
-
-    case 'base64':
-      return base64ToBytes(str).length;
-
-    default:
-      throw new Error('Unknown encoding');
-  }
-};
-
-function blitBuffer(src, dst, offset, length) {
-  var pos, i = 0;
-  while (i < length) {
-    if ((i+offset >= dst.length) || (i >= src.length))
-      break;
-
-    dst[i + offset] = src[i];
-    i++;
-  }
-  return i;
-}
-
-SlowBuffer.prototype.utf8Write = function (string, offset, length) {
-  var bytes, pos;
-  return SlowBuffer._charsWritten =  blitBuffer(utf8ToBytes(string), this, offset, length);
-};
-
-SlowBuffer.prototype.asciiWrite = function (string, offset, length) {
-  var bytes, pos;
-  return SlowBuffer._charsWritten =  blitBuffer(asciiToBytes(string), this, offset, length);
-};
-
-SlowBuffer.prototype.base64Write = function (string, offset, length) {
-  var bytes, pos;
-  return SlowBuffer._charsWritten = blitBuffer(base64ToBytes(string), this, offset, length);
-};
-
-SlowBuffer.prototype.base64Slice = function (start, end) {
-  var bytes = Array.prototype.slice.apply(this, arguments)
-  return require("base64-js").fromByteArray(bytes);
-}
-
-function decodeUtf8Char(str) {
-  try {
-    return decodeURIComponent(str);
-  } catch (err) {
-    return String.fromCharCode(0xFFFD); // UTF 8 invalid char
-  }
-}
-
-SlowBuffer.prototype.utf8Slice = function () {
-  var bytes = Array.prototype.slice.apply(this, arguments);
-  var res = "";
-  var tmp = "";
-  var i = 0;
-  while (i < bytes.length) {
-    if (bytes[i] <= 0x7F) {
-      res += decodeUtf8Char(tmp) + String.fromCharCode(bytes[i]);
-      tmp = "";
-    } else
-      tmp += "%" + bytes[i].toString(16);
-
-    i++;
-  }
-
-  return res + decodeUtf8Char(tmp);
-}
-
-SlowBuffer.prototype.asciiSlice = function () {
-  var bytes = Array.prototype.slice.apply(this, arguments);
-  var ret = "";
-  for (var i = 0; i < bytes.length; i++)
-    ret += String.fromCharCode(bytes[i]);
-  return ret;
-}
 
 SlowBuffer.prototype.inspect = function() {
   var out = [],
@@ -3483,7 +3608,7 @@ function readFloat(buffer, offset, isBigEndian, noAssert) {
         'Trying to read beyond buffer length');
   }
 
-  return require('./buffer_ieee754').readIEEE754(buffer, offset, isBigEndian,
+  return require('buffer_ieee754').readIEEE754(buffer, offset, isBigEndian,
       23, 4);
 }
 
@@ -3504,7 +3629,7 @@ function readDouble(buffer, offset, isBigEndian, noAssert) {
         'Trying to read beyond buffer length');
   }
 
-  return require('./buffer_ieee754').readIEEE754(buffer, offset, isBigEndian,
+  return require('buffer_ieee754').readIEEE754(buffer, offset, isBigEndian,
       52, 8);
 }
 
@@ -3794,7 +3919,7 @@ function writeFloat(buffer, value, offset, isBigEndian, noAssert) {
     verifIEEE754(value, 3.4028234663852886e+38, -3.4028234663852886e+38);
   }
 
-  require('./buffer_ieee754').writeIEEE754(buffer, value, offset, isBigEndian,
+  require('buffer_ieee754').writeIEEE754(buffer, value, offset, isBigEndian,
       23, 4);
 }
 
@@ -3823,7 +3948,7 @@ function writeDouble(buffer, value, offset, isBigEndian, noAssert) {
     verifIEEE754(value, 1.7976931348623157E+308, -1.7976931348623157E+308);
   }
 
-  require('./buffer_ieee754').writeIEEE754(buffer, value, offset, isBigEndian,
+  require('buffer_ieee754').writeIEEE754(buffer, value, offset, isBigEndian,
       52, 8);
 }
 
@@ -4170,95 +4295,7 @@ assert.doesNotThrow = function(block, /*optional*/error, /*optional*/message) {
 assert.ifError = function(err) { if (err) {throw err;}};
 });
 
-require.define("/node_modules/buffer-browserify/node_modules/base64-js/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"lib/b64.js"}});
-
-require.define("/node_modules/buffer-browserify/node_modules/base64-js/lib/b64.js",function(require,module,exports,__dirname,__filename,process){(function (exports) {
-	'use strict';
-
-	var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-
-	function b64ToByteArray(b64) {
-		var i, j, l, tmp, placeHolders, arr;
-	
-		if (b64.length % 4 > 0) {
-			throw 'Invalid string. Length must be a multiple of 4';
-		}
-
-		// the number of equal signs (place holders)
-		// if there are two placeholders, than the two characters before it
-		// represent one byte
-		// if there is only one, then the three characters before it represent 2 bytes
-		// this is just a cheap hack to not do indexOf twice
-		placeHolders = b64.indexOf('=');
-		placeHolders = placeHolders > 0 ? b64.length - placeHolders : 0;
-
-		// base64 is 4/3 + up to two characters of the original data
-		arr = [];//new Uint8Array(b64.length * 3 / 4 - placeHolders);
-
-		// if there are placeholders, only get up to the last complete 4 chars
-		l = placeHolders > 0 ? b64.length - 4 : b64.length;
-
-		for (i = 0, j = 0; i < l; i += 4, j += 3) {
-			tmp = (lookup.indexOf(b64[i]) << 18) | (lookup.indexOf(b64[i + 1]) << 12) | (lookup.indexOf(b64[i + 2]) << 6) | lookup.indexOf(b64[i + 3]);
-			arr.push((tmp & 0xFF0000) >> 16);
-			arr.push((tmp & 0xFF00) >> 8);
-			arr.push(tmp & 0xFF);
-		}
-
-		if (placeHolders === 2) {
-			tmp = (lookup.indexOf(b64[i]) << 2) | (lookup.indexOf(b64[i + 1]) >> 4);
-			arr.push(tmp & 0xFF);
-		} else if (placeHolders === 1) {
-			tmp = (lookup.indexOf(b64[i]) << 10) | (lookup.indexOf(b64[i + 1]) << 4) | (lookup.indexOf(b64[i + 2]) >> 2);
-			arr.push((tmp >> 8) & 0xFF);
-			arr.push(tmp & 0xFF);
-		}
-
-		return arr;
-	}
-
-	function uint8ToBase64(uint8) {
-		var i,
-			extraBytes = uint8.length % 3, // if we have 1 byte left, pad 2 bytes
-			output = "",
-			temp, length;
-
-		function tripletToBase64 (num) {
-			return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F];
-		};
-
-		// go through the array every three bytes, we'll deal with trailing stuff later
-		for (i = 0, length = uint8.length - extraBytes; i < length; i += 3) {
-			temp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2]);
-			output += tripletToBase64(temp);
-		}
-
-		// pad the end with zeros, but make sure to not forget the extra bytes
-		switch (extraBytes) {
-			case 1:
-				temp = uint8[uint8.length - 1];
-				output += lookup[temp >> 2];
-				output += lookup[(temp << 4) & 0x3F];
-				output += '==';
-				break;
-			case 2:
-				temp = (uint8[uint8.length - 2] << 8) + (uint8[uint8.length - 1]);
-				output += lookup[temp >> 10];
-				output += lookup[(temp >> 4) & 0x3F];
-				output += lookup[(temp << 2) & 0x3F];
-				output += '=';
-				break;
-		}
-
-		return output;
-	}
-
-	module.exports.toByteArray = b64ToByteArray;
-	module.exports.fromByteArray = uint8ToBase64;
-}());
-});
-
-require.define("/node_modules/buffer-browserify/buffer_ieee754.js",function(require,module,exports,__dirname,__filename,process){exports.readIEEE754 = function(buffer, offset, isBE, mLen, nBytes) {
+require.define("buffer_ieee754",function(require,module,exports,__dirname,__filename,process){exports.readIEEE754 = function(buffer, offset, isBE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
       eMax = (1 << eLen) - 1,
@@ -4344,7 +4381,838 @@ exports.writeIEEE754 = function(buffer, value, offset, isBE, mLen, nBytes) {
 };
 });
 
-require.define("/example/complex/node_modules/crdt/set.js",function(require,module,exports,__dirname,__filename,process){'use strict';
+require.define("/Documents/crdt/node_modules/scuttlebutt/util.js",function(require,module,exports,__dirname,__filename,process){var map = require('iterate').map
+
+exports.createID = 
+function createID () {
+  return map(3, function (i) {
+    return Math.random().toString(16).substring(2).toUpperCase()
+  }).join('')
+}
+
+/*
+this is just copied from crdt
+
+this is NOT a wholly accurate representation of the time.
+since js only measures time as ms, if you call Date.now()
+twice quickly, it's possible to get two identical time stamps.
+
+subsequent calls to timestamp() are ALWAYS strictly ordered.
+
+which is the important part.
+
+maybe call this something other than timestamp?
+
+what about 'close-enough' since that's what it is.
+
+also, it may be a very good idea to add something to syncronize
+network time.
+
+I'm guessing you ping your time stamps back in time, and make the minimal adjustment so that all messages are measured to 
+arrive on one machine after the time they claim to make left the other machine.
+
+will need to spin up a cluster to test this.
+*/
+
+exports.timestamp = timestamp
+
+var _last = 0
+var _count = 1
+var LAST
+function timestamp () {
+  var t = Date.now()
+  var _t = t
+  if(_last == t) {
+//    while(_last == _t)
+    _t += ((_count++)/1000) 
+  } 
+  else _count = 1 
+
+  _last = t
+
+  if(_t === LAST)
+    throw new Error('LAST:' + LAST + ',' + _t)
+  LAST = _t
+  return _t
+}
+
+exports.filter = function (update, sources) {
+  var ts = update[2]
+  var source = update[3]
+  return (!sources || !sources[source] || sources[source] < ts)
+}
+});
+
+require.define("/Documents/crdt/node_modules/scuttlebutt/node_modules/readable-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"readable.js"}});
+
+require.define("/Documents/crdt/node_modules/scuttlebutt/node_modules/readable-stream/readable.js",function(require,module,exports,__dirname,__filename,process){"use strict";
+
+module.exports = Readable;
+
+var Stream = require('stream');
+var util = require('util');
+
+util.inherits(Readable, Stream);
+
+function Readable(stream) {
+  if (stream) this.wrap(stream);
+  Stream.apply(this);
+}
+
+// override this method.
+Readable.prototype.read = function(n) {
+  return null;
+};
+
+Readable.prototype.pipe = function(dest, opt) {
+  if (!(opt && opt.end === false || dest === process.stdout ||
+        dest === process.stderr)) {
+    this.on('end', dest.end.bind(dest));
+  }
+
+  dest.emit('pipe', this);
+
+  flow.call(this);
+
+  function flow() {
+    var chunk;
+    while (chunk = this.read()) {
+      var written = dest.write(chunk);
+      if (written === false) {
+        dest.once('drain', flow.bind(this));
+        return;
+      }
+    }
+    this.once('readable', flow);
+  }
+};
+
+// kludge for on('data', fn) consumers.  Sad.
+// This is *not* part of the new readable stream interface.
+// It is an ugly unfortunate mess of history.
+Readable.prototype.on = function(ev, fn) {
+  if (ev === 'data') emitDataEvents(this);
+  return Stream.prototype.on.call(this, ev, fn);
+};
+Readable.prototype.addListener = Readable.prototype.on;
+
+function emitDataEvents(stream) {
+  var paused = false;
+  var readable = false;
+
+  // convert to an old-style stream.
+  stream.readable = true;
+  stream.pipe = Stream.prototype.pipe;
+  stream.on = stream.addEventListener = Stream.prototype.on;
+
+  stream.on('readable', function() {
+    readable = true;
+    var c;
+    while (!paused && (c = stream.read())) {
+      stream.emit('data', c);
+    }
+    if (c === null) readable = false;
+  });
+
+  stream.pause = function() {
+    paused = true;
+  };
+
+  stream.resume = function() {
+    paused = false;
+    if (readable) stream.emit('readable');
+  };
+}
+
+// wrap an old-style stream
+// This is *not* part of the readable stream interface.
+// It is an ugly unfortunate mess of history.
+Readable.prototype.wrap = function(stream) {
+  this._buffer = [];
+  this._bufferLength = 0;
+  var paused = false;
+  var ended = false;
+
+  stream.on('end', function() {
+    ended = true;
+    if (this._bufferLength === 0) {
+      this.emit('end');
+    }
+  }.bind(this));
+
+  stream.on('data', function(chunk) {
+    this._buffer.push(chunk);
+    this._bufferLength += chunk.length;
+    this.emit('readable');
+    // if not consumed, then pause the stream.
+    if (this._bufferLength > 0 && !paused) {
+      paused = true;
+      stream.pause();
+    }
+  }.bind(this));
+
+  // proxy all the other methods.
+  // important when wrapping filters and duplexes.
+  for (var i in stream) {
+    if (typeof stream[i] === 'function' &&
+        typeof this[i] === 'undefined') {
+      this[i] = function(method) { return function() {
+        return stream[method].apply(stream, arguments);
+      }}(i);
+    }
+  }
+
+  // proxy certain important events.
+  var events = ['error', 'close', 'destroy', 'pause', 'resume'];
+  events.forEach(function(ev) {
+    stream.on(ev, this.emit.bind(this, ev));
+  }.bind(this));
+
+  // consume some bytes.  if not all is consumed, then
+  // pause the underlying stream.
+  this.read = function(n) {
+    var ret;
+
+    if (this._bufferLength === 0) {
+      ret = null;
+    } else if (!n || n >= this._bufferLength) {
+      // read it all
+      ret = Buffer.concat(this._buffer);
+      this._bufferLength = 0;
+      this._buffer.length = 0;
+    } else {
+      // read just some of it.
+      if (n < this._buffer[0].length) {
+        // just take a part of the first buffer.
+        var buf = this._buffer[0];
+        ret = buf.slice(0, n);
+        this._buffer[0] = buf.slice(n);
+      } else if (n === this._buffer[0].length) {
+        // first buffer is a perfect match
+        ret = this._buffer.shift();
+      } else {
+        // complex case.
+        ret = new Buffer(n);
+        var c = 0;
+        for (var i = 0; i < this._buffer.length && c < n; i++) {
+          var buf = this._buffer[i];
+          var cpy = Math.min(n - c, buf.length);
+          buf.copy(ret, c, 0, cpy);
+          if (cpy < buf.length) {
+            this._buffer[i] = buf.slice(cpy);
+            this._buffer = this._buffer.slice(i);
+          }
+          n -= cpy;
+        }
+      }
+      this._bufferLength -= n;
+    }
+
+    if (this._bufferLength === 0) {
+      if (paused) {
+        stream.resume();
+        paused = false;
+      }
+      if (ended) {
+        process.nextTick(this.emit.bind(this, 'end'));
+      }
+    }
+    return ret;
+  };
+};
+});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index"}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/index.js",function(require,module,exports,__dirname,__filename,process){module.exports = {
+    // sync
+    forEachSync: require("./lib/sync/forEach")
+    , filterSync: require("./lib/sync/filter")
+    , mapSync: require("./lib/sync/map")
+    , reduceSync: require("./lib/sync/reduce")
+    , reduceRightSync: require("./lib/sync/reduceRight")
+    , everySync: require("./lib/sync/every")
+    , someSync: require("./lib/sync/some")
+    // async
+    , forEach: require("./lib/async/forEach")
+    , filter: require("./lib/async/filter")
+    , map: require("./lib/async/map")
+    , reduce: require("./lib/async/reduce")
+    , reduceRight: require("./lib/async/reduceRight")
+    , every: require("./lib/async/every")
+    , some: require("./lib/async/some")
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/sync/forEach.js",function(require,module,exports,__dirname,__filename,process){module.exports = forEach
+
+function forEach(list, iterator, context) {
+    var keys = Object.keys(list)
+
+    if (arguments.length < 3) {
+        context = this
+    }
+
+    for (var i = 0, len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+        
+        iterator.call(context, value, key, list)
+    }
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/sync/filter.js",function(require,module,exports,__dirname,__filename,process){module.exports = filter
+
+function filter(list, iterator, context) {
+    var returnValue = Array.isArray(list) ? [] : {}
+        , keys = Object.keys(list)
+
+    if (arguments.length < 3) {
+        context = this
+    }
+
+    for (var i = 0, len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+            , keepValue = iterator.call(context, value, key, list)
+
+        if (keepValue) {
+            if (Array.isArray(returnValue)) {
+                returnValue.push(value)
+            } else {
+                returnValue[key] = value
+            }
+        }
+    }
+
+    return returnValue
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/sync/map.js",function(require,module,exports,__dirname,__filename,process){module.exports = map
+
+function map(list, iterator, context) {
+    var returnValue = Array.isArray(list) ? [] : {}
+        , keys = Object.keys(list)
+
+    if (arguments.length < 3) {
+        context = this
+    }
+
+    for (var i = 0, len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+            , newValue = iterator.call(context, value, key, list)
+
+        returnValue[key] = newValue
+    }
+
+    return returnValue
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/sync/reduce.js",function(require,module,exports,__dirname,__filename,process){module.exports = reduce
+
+function reduce(list, iterator, context, accumulator) {
+    var keys = Object.keys(list)
+        , i = 0
+
+    if (arguments.length === 2) {
+        context = this
+        accumulator = list[0]
+        i = 1
+    } else if (arguments.length === 3) {
+        accumulator = context
+        context = this
+    }
+
+    for (var len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+
+        accumulator = iterator.call(context, accumulator, value, key, list)
+    }
+
+    return accumulator
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/sync/reduceRight.js",function(require,module,exports,__dirname,__filename,process){module.exports = reduceRight
+
+function reduceRight(list, iterator, context, accumulator) {
+    var keys = Object.keys(list)
+        , len = keys.length
+        , i = len - 1
+
+    if (arguments.length === 2) {
+        context = this
+        accumulator = list[i]
+        i--
+    } else if (arguments.length === 3) {
+        accumulator = context
+        context = this
+    }
+
+    for (; i >= 0; i--) {
+        var key = keys[i]
+            , value = list[key]
+
+        accumulator = iterator.call(context, accumulator, value, key, list)
+    }
+
+    return accumulator
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/sync/every.js",function(require,module,exports,__dirname,__filename,process){module.exports = every
+
+function every(list, iterator, context) {
+    var keys = Object.keys(list)
+        , result
+
+    if (arguments.length < 3) {
+        context = this
+    }
+
+    for (var i = 0, len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+        
+        result = iterator.call(context, value, key, list)
+
+        if (!result) {
+            return result
+        }
+    }
+
+    return result
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/sync/some.js",function(require,module,exports,__dirname,__filename,process){module.exports = some
+
+function some(list, iterator, context) {
+    var keys = Object.keys(list)
+        , result = false
+
+    if (arguments.length < 3) {
+        context = this
+    }
+
+    for (var i = 0, len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+        
+        result = iterator.call(context, value, key, list)
+
+        if (result) {
+            return result
+        }
+    }
+
+    return result
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/async/forEach.js",function(require,module,exports,__dirname,__filename,process){module.exports = forEach
+
+function forEach(list, iterator, context, callback) {
+    var keys = Object.keys(list)
+        , count = keys.length
+
+    if (typeof context === "function") {
+        callback = context
+        context = this
+    }
+
+    for (var i = 0, len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+        
+        invokeIterator(iterator, next, context, value, key, list)
+    }
+
+    function next(err) {
+        if (err) {
+            return callback && callback(err)
+        }
+
+        if (--count === 0) {
+            callback && callback(null)
+        }
+    }
+}
+
+function invokeIterator(iterator, done, context, value, key, list) {
+    var length = iterator.length
+
+    if (length === 1) {
+        iterator.call(context, done)
+    } else if (length === 2) {
+        iterator.call(context, value, done)
+    } else if (length === 3) {
+        iterator.call(context, value, key, done)
+    } else {
+        iterator.call(context, value, key, list, done)
+    }
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/async/filter.js",function(require,module,exports,__dirname,__filename,process){var partial = require("ap").partial
+
+module.exports = filter
+
+function filter(list, iterator, context, callback) {
+    var keys = Object.keys(list)
+        , returnValue = Array.isArray(list) ? [] : {}
+        , count = keys.length
+
+    if (typeof context === "function") {
+        callback = context
+        context = this
+    }
+
+    for (var i = 0, len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+        
+        invokeIterator(iterator,
+            partial(next, value, key), context, value, key, list)
+    }
+
+    function next(value, key, err, keepValue) {
+        if (err) {
+            return callback && callback(err)
+        }
+
+        if (keepValue) {
+            if (Array.isArray(returnValue)) {
+                returnValue.push(value)
+            } else {
+                returnValue[key] = value
+            }
+        }
+
+        if (--count === 0) {
+            callback && callback(null, returnValue)
+        }
+    }
+}
+
+function invokeIterator(iterator, done, context, value, key, list) {
+    var length = iterator.length
+
+    if (length === 1) {
+        iterator.call(context, done)
+    } else if (length === 2) {
+        iterator.call(context, value, done)
+    } else if (length === 3) {
+        iterator.call(context, value, key, done)
+    } else {
+        iterator.call(context, value, key, list, done)
+    }
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/node_modules/ap/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"./index.js"}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/node_modules/ap/index.js",function(require,module,exports,__dirname,__filename,process){exports = module.exports = ap;
+function ap (args, fn) {
+    return function () {
+        return fn.apply(this, args.concat.apply(args, arguments));
+    };
+}
+
+exports.pa = pa;
+function pa (args, fn) {
+    return function () {
+        return fn.apply(this, [].slice.call(arguments).concat(args));
+    };
+}
+
+exports.apa = apa;
+function apa (left, right, fn) {
+    return function () {
+        return fn.apply(this,
+            left.concat.apply(left, arguments).concat(right)
+        );
+    };
+}
+
+exports.partial = partial;
+function partial (fn) {
+    var args = [].slice.call(arguments, 1);
+    return ap(args, fn);
+}
+
+exports.partialRight = partialRight;
+function partialRight (fn) {
+    var args = [].slice.call(arguments, 1);
+    return pa(args, fn);
+}
+
+exports.curry = curry;
+function curry (fn) {
+    return partial(partial, fn);
+}
+
+exports.curryRight = function curryRight (fn) {
+    return partial(partialRight, fn);
+}
+});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/async/map.js",function(require,module,exports,__dirname,__filename,process){var partial = require("ap").partial
+
+module.exports = map
+
+function map(list, iterator, context, callback) {
+    var keys = Object.keys(list)
+        , returnValue = Array.isArray(list) ? [] : {}
+        , count = keys.length
+
+    if (typeof context === "function") {
+        callback = context
+        context = this
+    }
+
+    for (var i = 0, len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+        
+        invokeIterator(iterator,
+            partial(next, key), context, value, key, list)
+    }
+
+    function next(key, err, newValue) {
+        if (err) {
+            return callback && callback(err)
+        }
+
+        returnValue[key] = newValue
+
+        if (--count === 0) {
+            callback && callback(null, returnValue)
+        }
+    }
+}
+
+function invokeIterator(iterator, done, context, value, key, list) {
+    var length = iterator.length
+
+    if (length === 1) {
+        iterator.call(context, done)
+    } else if (length === 2) {
+        iterator.call(context, value, done)
+    } else if (length === 3) {
+        iterator.call(context, value, key, done)
+    } else {
+        iterator.call(context, value, key, list, done)
+    }
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/async/reduce.js",function(require,module,exports,__dirname,__filename,process){module.exports = reduce
+
+function reduce(list, iterator, context, accumulator, callback) {
+    var keys = Object.keys(list)
+        , count = keys.length
+
+    if (arguments.length === 3) {
+        callback = context
+        context = this
+        accumulator = list[0]
+        keys.shift()
+        count--
+    } else if (arguments.length === 4) {
+        callback = accumulator
+        accumulator = context
+        context = this
+    }
+
+    go()
+
+    function go() {
+        var key = keys.shift()
+            , value = list[key]
+
+        invokeIterator(iterator, next, context, accumulator, value, key, list)
+    }
+
+    function next(err, value) {
+        if (err) {
+            return callback && callback(err)
+        }
+
+        accumulator = value
+
+        if (--count === 0) {
+            callback && callback(null, accumulator)
+        } else {
+            go()
+        }
+    }
+}
+
+function invokeIterator(iterator, done, context, acc, value, key, list) {
+    var length = iterator.length
+
+    if (length === 1) {
+        iterator.call(context, done)
+    } else if (length === 2) {
+        iterator.call(context, acc, done)
+    } else if (length === 3) {
+        iterator.call(context, acc, value, done)
+    } else if (length === 4) {
+        iterator.call(context, acc, value, key, done)
+    } else {
+        iterator.call(context, acc, value, key, list, done)
+    }
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/async/reduceRight.js",function(require,module,exports,__dirname,__filename,process){module.exports = forEach
+
+function forEach(list, iterator, context, accumulator, callback) {
+    var keys = Object.keys(list)
+        , len = keys.length
+        , count = keys.length
+
+    if (arguments.length === 3) {
+        callback = context
+        context = this
+        accumulator = list[len - 1]
+        keys.pop()
+        count--
+    } else if (arguments.length === 4) {
+        callback = accumulator
+        accumulator = context
+        context = this
+    }
+
+    go()
+
+    function go() {
+        var key = keys.pop()
+            , value = list[key]
+
+        invokeIterator(iterator, next, context, accumulator, value, key, list)
+    }
+
+    function next(err, value) {
+        if (err) {
+            return callback && callback(err)
+        }
+
+        accumulator = value
+
+        if (--count === 0) {
+            callback && callback(null, accumulator)
+        } else {
+            go()
+        }
+    }
+}
+
+function invokeIterator(iterator, done, context, acc, value, key, list) {
+    var length = iterator.length
+
+    if (length === 1) {
+        iterator.call(context, done)
+    } else if (length === 2) {
+        iterator.call(context, acc, done)
+    } else if (length === 3) {
+        iterator.call(context, acc, value, done)
+    } else if (length === 4) {
+        iterator.call(context, acc, value, key, done)
+    } else {
+        iterator.call(context, acc, value, key, list, done)
+    }
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/async/every.js",function(require,module,exports,__dirname,__filename,process){module.exports = every
+
+function every(list, iterator, context, callback) {
+    var keys = Object.keys(list)
+        , count = keys.length
+
+    if (typeof context === "function") {
+        callback = context
+        context = this
+    }
+
+    for (var i = 0, len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+        
+        invokeIterator(iterator, next, context, value, key, list)
+    }
+
+    function next(err, result) {
+        if (err) {
+            return callback && callback(err)
+        }
+
+        if (!result) {
+            return callback && callback(null, result)
+        }
+
+        if (--count === 0) {
+            callback && callback(null, result)
+        }
+    }
+}
+
+function invokeIterator(iterator, done, context, value, key, list) {
+    var length = iterator.length
+
+    if (length === 1) {
+        iterator.call(context, done)
+    } else if (length === 2) {
+        iterator.call(context, value, done)
+    } else if (length === 3) {
+        iterator.call(context, value, key, done)
+    } else {
+        iterator.call(context, value, key, list, done)
+    }
+}});
+
+require.define("/Documents/crdt/node_modules/delta-stream/node_modules/iterators/lib/async/some.js",function(require,module,exports,__dirname,__filename,process){module.exports = forEach
+
+function forEach(list, iterator, context, callback) {
+    var keys = Object.keys(list)
+        , count = keys.length
+
+    if (typeof context === "function") {
+        callback = context
+        context = this
+    }
+
+    for (var i = 0, len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+        
+        invokeIterator(iterator, next, context, value, key, list)
+    }
+
+    function next(err, result) {
+        if (err) {
+            return callback && callback(err)
+        }
+
+        if (result) {
+            return callback && callback(null, result)
+        }
+
+        if (--count === 0) {
+            callback && callback(null, result)
+        }
+    }
+}
+
+function invokeIterator(iterator, done, context, value, key, list) {
+    var length = iterator.length
+
+    if (length === 1) {
+        iterator.call(context, done)
+    } else if (length === 2) {
+        iterator.call(context, value, done)
+    } else if (length === 3) {
+        iterator.call(context, value, key, done)
+    } else {
+        iterator.call(context, value, key, list, done)
+    }
+}});
+
+require.define("/Documents/crdt/set.js",function(require,module,exports,__dirname,__filename,process){'use strict';
 var inherits     = require('util').inherits
 var EventEmitter = require('events').EventEmitter
 var u            = require('./utils')
@@ -4386,50 +5254,65 @@ module.exports = Set
 
 //TODO check if any currently existing items should be in the set. currently, one must create the set before recieving anything.
 
-function Set(doc, key, value) {
+function Set(doc, masterKey, masterValue) {
   var array = this._array = []
   var rows = this.rows =  {}
   var set = this
 
   //DO NOT CHANGE once you have created the set.
-  this.key = key
-  this.value = value
+  this.key = masterKey
+  this.value = masterValue
 
   function add(row) {
+    // It doesnt have the masterKey prop on state at start
+    var hasKey = false
     array.push(row)
     rows[row.id] = row
     set.emit('add', row)
 
-    function remove (_, changed) {
-      if(row.state[key] === value)
-        return set.emit('changes', row, changed)
+    function remove (key, value) {
+      // once it has it we no longer need to assume it's set
+      if (key === masterKey) {
+        hasKey = true
+      }
+
+      // If it doesn't have the key yet, assume it's correct
+      if(row.get(masterKey) === masterValue || !hasKey) {
+        var changes = {}
+        changes[key] = value
+        return set.emit('changes', row, changes)
+      }
+
       delete rows[row.id]
       var i = array.indexOf(row)
       if(~i) array.splice(i, 1)
       else return 
       set.emit('remove', row)
-      row.removeListener('changes', remove)
+      row.removeListener('change', remove)
     }
 
-    row.on('changes', remove)
- 
+    row.on('change', remove)
   }
 
-  doc.sets.on(key, function (row, changed) {
-    if(changed[key] !== value) return 
+  doc.sets.on(masterKey, function (row, changed) {
+    if(changed[masterKey] !== masterValue) return
     add(row)
   })
 
   this.rm = this.remove = function (row) {
     row = this.get(row) 
     if(!row) return
-    return row.set(key, null)
+    row.set(masterKey, null)
+    return row
   }
 
   for(var id in doc.rows) {
     var row = doc.get(id)
-    if(row.get(key) === value) add(row) 
+    if(row.get(masterKey) === masterValue) add(row) 
   }
+
+  this.setMaxListeners(Infinity)
+
 }
 
 Set.prototype.asArray = function () {
@@ -4438,7 +5321,7 @@ Set.prototype.asArray = function () {
 
 Set.prototype.toJSON = function () {
   return this._array.map(function (e) {
-    return e.state
+    return e.toJSON()
   }).sort(function (a, b) {
     return u.strord(a._sort || a.id, b._sort || b.id)
   })
@@ -4461,7 +5344,7 @@ Set.prototype.get = function (id) {
 }
 });
 
-require.define("/example/complex/node_modules/crdt/seq.js",function(require,module,exports,__dirname,__filename,process){'use strict';
+require.define("/Documents/crdt/seq.js",function(require,module,exports,__dirname,__filename,process){'use strict';
 
 var Set      = require('./set')
 var Row      = require('./row')
@@ -4495,14 +5378,14 @@ function Seq (doc, key, val) {
     if(!changes._sort) return
     sort(seq._array)
     //check if there is already an item with this sort key.
-    var prev = 
+    var prev =
     find(seq._array, function (other) {
       return other != row && other.get('_sort') == row.get('_sort')
     })
 
-    //nudge it forward if it has the same key.    
+    //nudge it forward if it has the same key.
     if(prev)
-      seq.insert(row, prev, seq.next(row)) 
+      seq.insert(row, prev, seq.next(row))
     else
       seq.emit('move', row)
   })
@@ -4516,14 +5399,14 @@ function Seq (doc, key, val) {
     if('string' === typeof obj)
       obj = doc.rows[obj]
 
-    var _sort = 
-       u.between(before, after ) 
+    var _sort =
+       u.between(before, after )
      + u.randstr(3) //add a random tail so it's hard
                     //to concurrently add two items with the
                     //same sort.
  
     var r, changes
-    if(obj instanceof Row) {
+    if(Row.isRow(obj)) {
       r = obj
       changes = {_sort: _sort}
       if(r.get(key) != val)
@@ -4533,7 +5416,7 @@ function Seq (doc, key, val) {
       obj._sort = _sort
       obj[key] = val
       r = doc.set(id(obj), obj)
-    } 
+    }
     sort(this._array)
     return r
   }
@@ -4543,7 +5426,7 @@ function toKey (key) {
 
   return (
      'string' === typeof key ? key 
-  :  key instanceof Row      ? key.get()._sort
+  :  Row.isRow(key)          ? key.get("_sort")
   :  key                     ? key._sort
   : null
   )
@@ -4652,9 +5535,9 @@ module.exports = require('./inject')(function (){
 })
 });
 
-require.define("/node_modules/shoe/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js","browserify":"browser.js"}});
+require.define("/node_modules/reconnect/node_modules/shoe/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js","browserify":"browser.js"}});
 
-require.define("/node_modules/shoe/browser.js",function(require,module,exports,__dirname,__filename,process){var Stream = require('stream');
+require.define("/node_modules/reconnect/node_modules/shoe/browser.js",function(require,module,exports,__dirname,__filename,process){var Stream = require('stream');
 var sockjs = require('sockjs-client');
 
 module.exports = function (uri, cb) {
@@ -4667,8 +5550,6 @@ module.exports = function (uri, cb) {
             + (/^\//.test(uri) ? uri : '/' + uri)
         ;
     }
-
-    console.error(uri)
     
     var stream = new Stream;
     stream.readable = true;
@@ -4724,9 +5605,9 @@ module.exports = function (uri, cb) {
 };
 });
 
-require.define("/node_modules/shoe/node_modules/sockjs-client/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"sockjs.js"}});
+require.define("/node_modules/reconnect/node_modules/shoe/node_modules/sockjs-client/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"sockjs.js"}});
 
-require.define("/node_modules/shoe/node_modules/sockjs-client/sockjs.js",function(require,module,exports,__dirname,__filename,process){/* SockJS client, version 0.3.1.7.ga67f.dirty, http://sockjs.org, MIT License
+require.define("/node_modules/reconnect/node_modules/shoe/node_modules/sockjs-client/sockjs.js",function(require,module,exports,__dirname,__filename,process){/* SockJS client, version 0.3.1.7.ga67f.dirty, http://sockjs.org, MIT License
 
 Copyright (c) 2011-2012 VMware, Inc.
 
@@ -7401,10 +8282,11 @@ module.exports = ExponentialBackoffStrategy;
 
 });
 
-require.define("/node_modules/mux-demux/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
+require.define("/Documents/crdt/node_modules/mux-demux/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
 
-require.define("/node_modules/mux-demux/index.js",function(require,module,exports,__dirname,__filename,process){var es = require('event-stream')
+require.define("/Documents/crdt/node_modules/mux-demux/index.js",function(require,module,exports,__dirname,__filename,process){var es = require('event-stream')
   , extend = require('xtend')
+  , serializer = require('stream-serializer')
 
 function MuxDemux (opts, onConnection) {
   if('function' === typeof opts)
@@ -7471,7 +8353,6 @@ function MuxDemux (opts, onConnection) {
     }
   }
 
-
   md.pause = function () {}
   md.resume = function () {}
 
@@ -7506,10 +8387,7 @@ function MuxDemux (opts, onConnection) {
     return s
   }
 
-  var outer = (
-    opts && opts.wrapper ? opts.wrapper(md) :
-    es.pipeline(es.split(), es.parse(), md, es.stringify())
-  )
+  var outer = serializer(opts.wrapper)(md)
 
   if(md !== outer)
     md.on('connection', function (stream) {
@@ -7559,9 +8437,95 @@ module.exports = MuxDemux
 
 });
 
-require.define("/node_modules/event-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
+require.define("/Documents/crdt/node_modules/mux-demux/node_modules/xtend/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index"}});
 
-require.define("/node_modules/event-stream/index.js",function(require,module,exports,__dirname,__filename,process){//filter will reemit the data if cb(err,pass) pass is truthy
+require.define("/Documents/crdt/node_modules/mux-demux/node_modules/xtend/index.js",function(require,module,exports,__dirname,__filename,process){module.exports = extend
+
+function extend(target) {
+    for (var i = 1; i < arguments.length; i++) {
+        var source = arguments[i],
+            keys = Object.keys(source)
+
+        for (var j = 0; j < keys.length; j++) {
+            var name = keys[j]
+            target[name] = source[name]
+        }
+    }
+
+    return target
+}});
+
+require.define("/Documents/crdt/node_modules/kv/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"browserify":"./client.js"}});
+
+require.define("/Documents/crdt/node_modules/kv/client.js",function(require,module,exports,__dirname,__filename,process){
+var ends = require('./endpoints-client')
+var kv   = require('./kv')
+
+module.exports = kv(ends)
+});
+
+require.define("/Documents/crdt/node_modules/kv/endpoints-client.js",function(require,module,exports,__dirname,__filename,process){var es = require('event-stream')
+
+module.exports = function (prefix, exports) {
+
+  exports = exports || {}
+
+  //put, get, del, has
+
+  exports.put = function (key, opts) {
+    var _key = prefix+':'+key
+    opts = opts || {flags: 'w'}
+    if(opts.flags !== 'a' || !localStorage[_key])
+      localStorage[_key] = ''
+    //assume write if not explicit append.
+
+    var ws = es.through(function (data) {
+      localStorage[_key] += data + '\n'
+    })
+
+    //remove readable api.
+    ws.readable = false
+    delete ws.pause
+    delete ws.resume
+
+    return ws
+  }
+
+  exports.get = function (key, opts) { 
+    var _key = prefix+':'+key
+    var array = localStorage[_key].split(/(\n)/)
+    if(!array[array.length - 1])
+      array.pop() //expecting an empty '' at the end.
+    return es.readArray(array) 
+  }
+
+  exports.del = function (key, cb) {
+    var _key = prefix+':'+key
+    process.nextTick(function () {
+      if(!localStorage[_key])
+        return cb(new Error ('no record: ' + key))
+
+      delete localStorage[prefix+':'+key]
+      cb()
+    })
+  }
+
+  exports.has = function (key, cb) {
+    var _key = prefix+':'+key
+    process.nextTick(function () {
+      if(!localStorage[_key])
+        return cb(new Error ('no record: ' + key))
+      cb()
+    })
+  }
+
+  return exports
+}
+});
+
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
+
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/index.js",function(require,module,exports,__dirname,__filename,process){//filter will reemit the data if cb(err,pass) pass is truthy
 
 // reduce is more tricky
 // maybe we want to group the reductions or emit progress updates occasionally
@@ -7574,14 +8538,12 @@ var Stream = require('stream').Stream
   , from = require('from')
   , duplex = require('duplexer')
   , map = require('map-stream')
-  , pause = require('pause-stream')
 
 es.Stream = Stream //re-export Stream from core
 es.through = through
 es.from = from
 es.duplex = duplex
 es.map = map
-es.pause = pause
 
 // merge / concat
 //
@@ -7842,6 +8804,61 @@ es.split = function (matcher) {
 }
 
 //
+// gate 
+//
+// while the gate is shut(), buffer incoming. 
+// 
+// if gate is open() stream like normal.
+//
+// currently, when opened, this will emit all data unless it is shut again
+// if downstream pauses it will still write, i'd like to make it respect pause, 
+// but i'll need a test case first.
+
+es.gate = function (shut) {
+
+  var stream = new Stream()
+    , queue = []
+    , ended = false
+
+    shut = (shut === false ? false : true) //default to shut
+
+  stream.writable = true
+  stream.readable = true
+
+  stream.isShut = function () { return shut }
+  stream.shut   = function () { shut = true }
+  stream.open   = function () { shut = false; maybe() }
+  
+  function maybe () {
+    while(queue.length && !shut) {
+      var args = queue.shift()
+      args.unshift('data')
+      stream.emit.apply(stream, args)
+    }
+    stream.emit('drain')
+    if(ended && !shut) 
+      stream.emit('end')
+  }
+  
+  stream.write = function () {
+    var args = [].slice.call(arguments)
+  
+    queue.push(args)
+    if (shut) return false //pause up stream pipes  
+
+    maybe()
+  }
+
+  stream.end = function () {
+    ended = true
+    if (!queue.length)
+      stream.emit('end')
+  }
+
+  return stream
+}
+
+//
 // parse
 //
 // must be used after es.split() to ensure that each chunk represents a line
@@ -7954,13 +8971,67 @@ var setup = function (args) {
 es.pipeable = function () {
   console.error('warn: event-stream. I have decided that pipeable is a kitchen-sick and will remove soon if no objections')
   console.error('please post an issue if you actually use this. -- dominictarr')
-  throw new Error('[EVENT-STREAM] es.pipeable is deprecated')
+
+  if(process.title != 'node')
+    return console.error('cannot use es.pipeable in the browser')
+  //(require) inside brackets to fool browserify, because this does not make sense in the browser.
+  var opts = (require)('optimist').argv
+  var args = [].slice.call(arguments)
+  
+  if(opts.h || opts.help) {
+    var name = process.argv[1]
+    console.error([
+      'Usage:',
+      '',
+      'node ' + name + ' [options]',
+      '  --port PORT        turn this stream into a server',
+      '  --host HOST        host of server (localhost is default)',
+      '  --protocol         protocol http|net will require(protocol).createServer(...',
+      '  --help             display this message',
+      '',
+      ' if --port is not set, will stream input from stdin',
+      '',
+      'also, pipe from or to files:',
+      '',
+      ' node '+name+ ' < file    #pipe from file into this stream',
+      ' node '+name+ ' < infile > outfile    #pipe from file into this stream',     
+      '',
+    ].join('\n'))
+  
+  } else if (!opts.port) {
+    var streams = setup(args)
+    streams.unshift(es.split())
+    //streams.unshift()
+    streams.push(process.stdout)
+    var c = es.pipeline.apply(null, streams)
+    process.openStdin().pipe(c) //there
+    return c
+
+  } else {
+  
+    opts.host = opts.host || 'localhost'
+    opts.protocol = opts.protocol || 'http'
+    
+    var protocol = (require)(opts.protocol)
+        
+    var server = protocol.createServer(function (instream, outstream) {  
+      var streams = setup(args)
+      streams.unshift(es.split())
+      streams.unshift(instream)
+      streams.push(outstream || instream)
+      es.pipe.apply(null, streams)
+    })
+    
+    server.listen(opts.port, opts.host)
+
+    console.error(process.argv[1] +' is listening for "' + opts.protocol + '" on ' + opts.host + ':' + opts.port)  
+  }
 }
 });
 
-require.define("/node_modules/event-stream/node_modules/through/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/through/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
 
-require.define("/node_modules/event-stream/node_modules/through/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require('stream')
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/through/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require('stream')
 
 // through
 //
@@ -8027,9 +9098,9 @@ function through (write, end) {
 
 });
 
-require.define("/node_modules/event-stream/node_modules/from/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/from/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
 
-require.define("/node_modules/event-stream/node_modules/from/index.js",function(require,module,exports,__dirname,__filename,process){
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/from/index.js",function(require,module,exports,__dirname,__filename,process){
 var Stream = require('stream')
 
 // from
@@ -8093,9 +9164,9 @@ function from (source) {
 }
 });
 
-require.define("/node_modules/event-stream/node_modules/duplexer/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index"}});
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/duplexer/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index"}});
 
-require.define("/node_modules/event-stream/node_modules/duplexer/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require("stream")
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/duplexer/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require("stream")
     , writeMethods = ["write", "end", "destroy"]
     , readMethods = ["resume", "pause"]
     , readEvents = ["data", "close"]
@@ -8176,9 +9247,9 @@ function duplex(writer, reader) {
     }
 }});
 
-require.define("/node_modules/event-stream/node_modules/map-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/map-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
 
-require.define("/node_modules/event-stream/node_modules/map-stream/index.js",function(require,module,exports,__dirname,__filename,process){//filter will reemit the data if cb(err,pass) pass is truthy
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/map-stream/index.js",function(require,module,exports,__dirname,__filename,process){//filter will reemit the data if cb(err,pass) pass is truthy
 
 // reduce is more tricky
 // maybe we want to group the reductions or emit progress updates occasionally
@@ -8285,173 +9356,548 @@ module.exports = function (mapper) {
 
 });
 
-require.define("/node_modules/event-stream/node_modules/pause-stream/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/optimist/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"./index.js"}});
 
-require.define("/node_modules/event-stream/node_modules/pause-stream/index.js",function(require,module,exports,__dirname,__filename,process){var Stream = require('stream')
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/optimist/index.js",function(require,module,exports,__dirname,__filename,process){var path = require('path');
+var wordwrap = require('wordwrap');
 
-/*
-  was gonna use through for this,
-  but it does not match quite right,
-  because you need a seperate pause
-  mechanism for the readable and writable
-  sides.
+/*  Hack an instance of Argv with process.argv into Argv
+    so people can do
+        require('optimist')(['--beeble=1','-z','zizzle']).argv
+    to parse a list of args and
+        require('optimist').argv
+    to get a parsed version of process.argv.
 */
 
-module.exports = function () {
-  var buffer = [], ended = false, destroyed = false
-  var stream = new Stream() 
-  stream.writable = stream.readable = true
-  stream.paused = false 
-  
-  stream.write = function (data) {
-    if(!this.paused)
-      this.emit('data', data)
-    else 
-      buffer.push(data)
-    return !(this.paused || buffer.length)
-  }
-  function onEnd () {
-    stream.readable = false
-    stream.emit('end')
-    process.nextTick(stream.destroy.bind(stream))
-  }
-  stream.end = function (data) {
-    if(data) this.write(data)
-    this.ended = true
-    this.writable = false
-    if(!(this.paused || buffer.length))
-      return onEnd()
-    else
-      this.once('drain', onEnd)
-    this.drain()
-  }
-
-  stream.drain = function () {
-    while(!this.paused && buffer.length)
-      this.emit('data', buffer.shift())
-    //if the buffer has emptied. emit drain.
-    if(!buffer.length && !this.paused)
-      this.emit('drain')
-  }
-
-  stream.resume = function () {
-    //this is where I need pauseRead, and pauseWrite.
-    //here the reading side is unpaused,
-    //but the writing side may still be paused.
-    //the whole buffer might not empity at once.
-    //it might pause again.
-    //the stream should never emit data inbetween pause()...resume()
-    //and write should return !buffer.length
-
-    this.paused = false
-//    process.nextTick(this.drain.bind(this)) //will emit drain if buffer empties.
-    this.drain()
-    return this
-  }
-
-  stream.destroy = function () {
-    if(destroyed) return
-    destroyed = ended = true     
-    buffer.length = 0
-    this.emit('close')
-  }
-
-  stream.pause = function () {
-    stream.paused = true
-    return this
-  }
- 
-  return stream
-}
+var inst = Argv(process.argv.slice(2));
+Object.keys(inst).forEach(function (key) {
+    Argv[key] = typeof inst[key] == 'function'
+        ? inst[key].bind(inst)
+        : inst[key];
 });
 
-require.define("/node_modules/mux-demux/node_modules/xtend/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index"}});
-
-require.define("/node_modules/mux-demux/node_modules/xtend/index.js",function(require,module,exports,__dirname,__filename,process){module.exports = extend
-
-function extend(target) {
-    for (var i = 1; i < arguments.length; i++) {
-        var source = arguments[i],
-            keys = Object.keys(source)
-
-        for (var j = 0; j < keys.length; j++) {
-            var name = keys[j]
-            target[name] = source[name]
-        }
+var exports = module.exports = Argv;
+function Argv (args, cwd) {
+    var self = {};
+    if (!cwd) cwd = process.cwd();
+    
+    self.$0 = process.argv
+        .slice(0,2)
+        .map(function (x) {
+            var b = rebase(cwd, x);
+            return x.match(/^\//) && b.length < x.length
+                ? b : x
+        })
+        .join(' ')
+    ;
+    
+    if (process.argv[1] == process.env._) {
+        self.$0 = process.env._.replace(
+            path.dirname(process.execPath) + '/', ''
+        );
     }
+    
+    var flags = { bools : {}, strings : {} };
+    
+    self.boolean = function (bools) {
+        if (!Array.isArray(bools)) {
+            bools = [].slice.call(arguments);
+        }
+        
+        bools.forEach(function (name) {
+            flags.bools[name] = true;
+        });
+        
+        return self;
+    };
+    
+    self.string = function (strings) {
+        if (!Array.isArray(strings)) {
+            strings = [].slice.call(arguments);
+        }
+        
+        strings.forEach(function (name) {
+            flags.strings[name] = true;
+        });
+        
+        return self;
+    };
+    
+    var aliases = {};
+    self.alias = function (x, y) {
+        if (typeof x === 'object') {
+            Object.keys(x).forEach(function (key) {
+                self.alias(key, x[key]);
+            });
+        }
+        else if (Array.isArray(y)) {
+            y.forEach(function (yy) {
+                self.alias(x, yy);
+            });
+        }
+        else {
+            var zs = (aliases[x] || []).concat(aliases[y] || []).concat(x, y);
+            aliases[x] = zs.filter(function (z) { return z != x });
+            aliases[y] = zs.filter(function (z) { return z != y });
+        }
+        
+        return self;
+    };
+    
+    var demanded = {};
+    self.demand = function (keys) {
+        if (typeof keys == 'number') {
+            if (!demanded._) demanded._ = 0;
+            demanded._ += keys;
+        }
+        else if (Array.isArray(keys)) {
+            keys.forEach(function (key) {
+                self.demand(key);
+            });
+        }
+        else {
+            demanded[keys] = true;
+        }
+        
+        return self;
+    };
+    
+    var usage;
+    self.usage = function (msg, opts) {
+        if (!opts && typeof msg === 'object') {
+            opts = msg;
+            msg = null;
+        }
+        
+        usage = msg;
+        
+        if (opts) self.options(opts);
+        
+        return self;
+    };
+    
+    function fail (msg) {
+        self.showHelp();
+        if (msg) console.error(msg);
+        process.exit(1);
+    }
+    
+    var checks = [];
+    self.check = function (f) {
+        checks.push(f);
+        return self;
+    };
+    
+    var defaults = {};
+    self.default = function (key, value) {
+        if (typeof key === 'object') {
+            Object.keys(key).forEach(function (k) {
+                self.default(k, key[k]);
+            });
+        }
+        else {
+            defaults[key] = value;
+        }
+        
+        return self;
+    };
+    
+    var descriptions = {};
+    self.describe = function (key, desc) {
+        if (typeof key === 'object') {
+            Object.keys(key).forEach(function (k) {
+                self.describe(k, key[k]);
+            });
+        }
+        else {
+            descriptions[key] = desc;
+        }
+        return self;
+    };
+    
+    self.parse = function (args) {
+        return Argv(args).argv;
+    };
+    
+    self.option = self.options = function (key, opt) {
+        if (typeof key === 'object') {
+            Object.keys(key).forEach(function (k) {
+                self.options(k, key[k]);
+            });
+        }
+        else {
+            if (opt.alias) self.alias(key, opt.alias);
+            if (opt.demand) self.demand(key);
+            if (opt.default) self.default(key, opt.default);
+            
+            if (opt.boolean || opt.type === 'boolean') {
+                self.boolean(key);
+            }
+            if (opt.string || opt.type === 'string') {
+                self.string(key);
+            }
+            
+            var desc = opt.describe || opt.description || opt.desc;
+            if (desc) {
+                self.describe(key, desc);
+            }
+        }
+        
+        return self;
+    };
+    
+    var wrap = null;
+    self.wrap = function (cols) {
+        wrap = cols;
+        return self;
+    };
+    
+    self.showHelp = function (fn) {
+        if (!fn) fn = console.error;
+        fn(self.help());
+    };
+    
+    self.help = function () {
+        var keys = Object.keys(
+            Object.keys(descriptions)
+            .concat(Object.keys(demanded))
+            .concat(Object.keys(defaults))
+            .reduce(function (acc, key) {
+                if (key !== '_') acc[key] = true;
+                return acc;
+            }, {})
+        );
+        
+        var help = keys.length ? [ 'Options:' ] : [];
+        
+        if (usage) {
+            help.unshift(usage.replace(/\$0/g, self.$0), '');
+        }
+        
+        var switches = keys.reduce(function (acc, key) {
+            acc[key] = [ key ].concat(aliases[key] || [])
+                .map(function (sw) {
+                    return (sw.length > 1 ? '--' : '-') + sw
+                })
+                .join(', ')
+            ;
+            return acc;
+        }, {});
+        
+        var switchlen = longest(Object.keys(switches).map(function (s) {
+            return switches[s] || '';
+        }));
+        
+        var desclen = longest(Object.keys(descriptions).map(function (d) { 
+            return descriptions[d] || '';
+        }));
+        
+        keys.forEach(function (key) {
+            var kswitch = switches[key];
+            var desc = descriptions[key] || '';
+            
+            if (wrap) {
+                desc = wordwrap(switchlen + 4, wrap)(desc)
+                    .slice(switchlen + 4)
+                ;
+            }
+            
+            var spadding = new Array(
+                Math.max(switchlen - kswitch.length + 3, 0)
+            ).join(' ');
+            
+            var dpadding = new Array(
+                Math.max(desclen - desc.length + 1, 0)
+            ).join(' ');
+            
+            var type = null;
+            
+            if (flags.bools[key]) type = '[boolean]';
+            if (flags.strings[key]) type = '[string]';
+            
+            if (!wrap && dpadding.length > 0) {
+                desc += dpadding;
+            }
+            
+            var prelude = '  ' + kswitch + spadding;
+            var extra = [
+                type,
+                demanded[key]
+                    ? '[required]'
+                    : null
+                ,
+                defaults[key] !== undefined
+                    ? '[default: ' + JSON.stringify(defaults[key]) + ']'
+                    : null
+                ,
+            ].filter(Boolean).join('  ');
+            
+            var body = [ desc, extra ].filter(Boolean).join('  ');
+            
+            if (wrap) {
+                var dlines = desc.split('\n');
+                var dlen = dlines.slice(-1)[0].length
+                    + (dlines.length === 1 ? prelude.length : 0)
+                
+                body = desc + (dlen + extra.length > wrap - 2
+                    ? '\n'
+                        + new Array(wrap - extra.length + 1).join(' ')
+                        + extra
+                    : new Array(wrap - extra.length - dlen + 1).join(' ')
+                        + extra
+                );
+            }
+            
+            help.push(prelude + body);
+        });
+        
+        help.push('');
+        return help.join('\n');
+    };
+    
+    Object.defineProperty(self, 'argv', {
+        get : parseArgs,
+        enumerable : true,
+    });
+    
+    function parseArgs () {
+        var argv = { _ : [], $0 : self.$0 };
+        Object.keys(flags.bools).forEach(function (key) {
+            setArg(key, defaults[key] || false);
+        });
+        
+        function setArg (key, val) {
+            var num = Number(val);
+            var value = typeof val !== 'string' || isNaN(num) ? val : num;
+            if (flags.strings[key]) value = val;
+            
+            if (key in argv && !flags.bools[key]) {
+                if (!Array.isArray(argv[key])) {
+                    argv[key] = [ argv[key] ];
+                }
+                argv[key].push(value);
+            }
+            else {
+                argv[key] = value;
+            }
+            
+            (aliases[key] || []).forEach(function (x) {
+                argv[x] = argv[key];
+            });
+        }
+        
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            
+            if (arg === '--') {
+                argv._.push.apply(argv._, args.slice(i + 1));
+                break;
+            }
+            else if (arg.match(/^--.+=/)) {
+                var m = arg.match(/^--([^=]+)=(.*)/);
+                setArg(m[1], m[2]);
+            }
+            else if (arg.match(/^--no-.+/)) {
+                var key = arg.match(/^--no-(.+)/)[1];
+                setArg(key, false);
+            }
+            else if (arg.match(/^--.+/)) {
+                var key = arg.match(/^--(.+)/)[1];
+                var next = args[i + 1];
+                if (next !== undefined && !next.match(/^-/)
+                && !flags.bools[key]) {
+                    setArg(key, next);
+                    i++;
+                }
+                else if (flags.bools[key] && /true|false/.test(next)) {
+                    setArg(key, next === 'true');
+                    i++;
+                }
+                else {
+                    setArg(key, true);
+                }
+            }
+            else if (arg.match(/^-[^-]+/)) {
+                var letters = arg.slice(1,-1).split('');
+                
+                var broken = false;
+                for (var j = 0; j < letters.length; j++) {
+                    if (letters[j+1] && letters[j+1].match(/\W/)) {
+                        setArg(letters[j], arg.slice(j+2));
+                        broken = true;
+                        break;
+                    }
+                    else {
+                        setArg(letters[j], true);
+                    }
+                }
+                
+                if (!broken) {
+                    var key = arg.slice(-1)[0];
+                    
+                    if (args[i+1] && !args[i+1].match(/^-/)
+                    && !flags.bools[key]) {
+                        setArg(key, args[i+1]);
+                        i++;
+                    }
+                    else if (args[i+1] && flags.bools[key] && /true|false/.test(args[i+1])) {
+                        setArg(key, args[i+1] === 'true');
+                        i++;
+                    }
+                    else {
+                        setArg(key, true);
+                    }
+                }
+            }
+            else {
+                var n = Number(arg);
+                argv._.push(flags.strings['_'] || isNaN(n) ? arg : n);
+            }
+        }
+        
+        Object.keys(defaults).forEach(function (key) {
+            if (!(key in argv)) {
+                argv[key] = defaults[key];
+            }
+        });
+        
+        if (demanded._ && argv._.length < demanded._) {
+            fail('Not enough non-option arguments: got '
+                + argv._.length + ', need at least ' + demanded._
+            );
+        }
+        
+        var missing = [];
+        Object.keys(demanded).forEach(function (key) {
+            if (!argv[key]) missing.push(key);
+        });
+        
+        if (missing.length) {
+            fail('Missing required arguments: ' + missing.join(', '));
+        }
+        
+        checks.forEach(function (f) {
+            try {
+                if (f(argv) === false) {
+                    fail('Argument check failed: ' + f.toString());
+                }
+            }
+            catch (err) {
+                fail(err)
+            }
+        });
+        
+        return argv;
+    }
+    
+    function longest (xs) {
+        return Math.max.apply(
+            null,
+            xs.map(function (x) { return x.length })
+        );
+    }
+    
+    return self;
+};
 
-    return target
-}});
-
-require.define("/node_modules/kv/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"browserify":"./client.js"}});
-
-require.define("/node_modules/kv/client.js",function(require,module,exports,__dirname,__filename,process){
-var ends = require('./endpoints-client')
-var kv   = require('./kv')
-
-module.exports = kv(ends)
+// rebase an absolute path to a relative one with respect to a base directory
+// exported for tests
+exports.rebase = rebase;
+function rebase (base, dir) {
+    var ds = path.normalize(dir).split('/').slice(1);
+    var bs = path.normalize(base).split('/').slice(1);
+    
+    for (var i = 0; ds[i] && ds[i] == bs[i]; i++);
+    ds.splice(0, i); bs.splice(0, i);
+    
+    var p = path.normalize(
+        bs.map(function () { return '..' }).concat(ds).join('/')
+    ).replace(/\/$/,'').replace(/^$/, '.');
+    return p.match(/^[.\/]/) ? p : './' + p;
+};
 });
 
-require.define("/node_modules/kv/endpoints-client.js",function(require,module,exports,__dirname,__filename,process){var es = require('event-stream')
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/optimist/node_modules/wordwrap/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"./index.js"}});
 
-module.exports = function (prefix, exports) {
+require.define("/Documents/crdt/node_modules/kv/node_modules/event-stream/node_modules/optimist/node_modules/wordwrap/index.js",function(require,module,exports,__dirname,__filename,process){var wordwrap = module.exports = function (start, stop, params) {
+    if (typeof start === 'object') {
+        params = start;
+        start = params.start;
+        stop = params.stop;
+    }
+    
+    if (typeof stop === 'object') {
+        params = stop;
+        start = start || params.start;
+        stop = undefined;
+    }
+    
+    if (!stop) {
+        stop = start;
+        start = 0;
+    }
+    
+    if (!params) params = {};
+    var mode = params.mode || 'soft';
+    var re = mode === 'hard' ? /\b/ : /(\S+\s+)/;
+    
+    return function (text) {
+        var chunks = text.toString()
+            .split(re)
+            .reduce(function (acc, x) {
+                if (mode === 'hard') {
+                    for (var i = 0; i < x.length; i += stop - start) {
+                        acc.push(x.slice(i, i + stop - start));
+                    }
+                }
+                else acc.push(x)
+                return acc;
+            }, [])
+        ;
+        
+        return chunks.reduce(function (lines, rawChunk) {
+            if (rawChunk === '') return lines;
+            
+            var chunk = rawChunk.replace(/\t/g, '    ');
+            
+            var i = lines.length - 1;
+            if (lines[i].length + chunk.length > stop) {
+                lines[i] = lines[i].replace(/\s+$/, '');
+                
+                chunk.split(/\n/).forEach(function (c) {
+                    lines.push(
+                        new Array(start + 1).join(' ')
+                        + c.replace(/^\s+/, '')
+                    );
+                });
+            }
+            else if (chunk.match(/\n/)) {
+                var xs = chunk.split(/\n/);
+                lines[i] += xs.shift();
+                xs.forEach(function (c) {
+                    lines.push(
+                        new Array(start + 1).join(' ')
+                        + c.replace(/^\s+/, '')
+                    );
+                });
+            }
+            else {
+                lines[i] += chunk;
+            }
+            
+            return lines;
+        }, [ new Array(start + 1).join(' ') ]).join('\n');
+    };
+};
 
-  exports = exports || {}
+wordwrap.soft = wordwrap;
 
-  //put, get, del, has
-
-  exports.put = function (key, opts) {
-    var _key = prefix+':'+key
-    opts = opts || {flags: 'w'}
-    if(opts.flags !== 'a' || !localStorage[_key])
-      localStorage[_key] = ''
-    //assume write if not explicit append.
-
-    var ws = es.through(function (data) {
-      localStorage[_key] += data + '\n'
-    })
-
-    //remove readable api.
-    ws.readable = false
-    delete ws.pause
-    delete ws.resume
-
-    return ws
-  }
-
-  exports.get = function (key, opts) { 
-    var _key = prefix+':'+key
-    var array = localStorage[_key].split(/(\n)/)
-    if(!array[array.length - 1])
-      array.pop() //expecting an empty '' at the end.
-    return es.readArray(array) 
-  }
-
-  exports.del = function (key, cb) {
-    var _key = prefix+':'+key
-    process.nextTick(function () {
-      if(!localStorage[_key])
-        return cb(new Error ('no record: ' + key))
-
-      delete localStorage[prefix+':'+key]
-      cb()
-    })
-  }
-
-  exports.has = function (key, cb) {
-    var _key = prefix+':'+key
-    process.nextTick(function () {
-      if(!localStorage[_key])
-        return cb(new Error ('no record: ' + key))
-      cb()
-    })
-  }
-
-  return exports
-}
+wordwrap.hard = function (start, stop) {
+    return wordwrap(start, stop, { mode : 'hard' });
+};
 });
 
-require.define("/node_modules/kv/kv.js",function(require,module,exports,__dirname,__filename,process){/*
+require.define("/Documents/crdt/node_modules/kv/kv.js",function(require,module,exports,__dirname,__filename,process){/*
   very simple kv store setup for to be able to append to each document.
   each value is stored in a separate file,
   put, get, return streams
@@ -8572,9 +10018,9 @@ module.exports = function (endpoints) {
 
 });
 
-require.define("/example/complex/node_modules/domready/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"./ready.js"}});
+require.define("/Documents/crdt/example/complex/node_modules/domready/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"./ready.js"}});
 
-require.define("/example/complex/node_modules/domready/ready.js",function(require,module,exports,__dirname,__filename,process){/*!
+require.define("/Documents/crdt/example/complex/node_modules/domready/ready.js",function(require,module,exports,__dirname,__filename,process){/*!
   * domready (c) Dustin Diaz 2012 - License MIT
   */
 !function (name, definition) {
@@ -8629,9 +10075,9 @@ require.define("/example/complex/node_modules/domready/ready.js",function(requir
     })
 })});
 
-require.define("/example/complex/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
+require.define("/Documents/crdt/example/complex/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {}});
 
-require.define("/example/complex/chat.js",function(require,module,exports,__dirname,__filename,process){var crdt = require('crdt')
+require.define("/Documents/crdt/example/complex/chat.js",function(require,module,exports,__dirname,__filename,process){var crdt = require('../../index')
 
 module.exports =
 
@@ -8647,7 +10093,7 @@ function createChat (el, doc) {
 
   messages.on('add', function (obj) {
     var div, span, a
-    div = 
+    div =
     $('<div class=line>')
       .append(span = $('<span class=message>'))
       .append(a = $('<a href=# class=del>x</a>')
@@ -8658,10 +10104,10 @@ function createChat (el, doc) {
 
     CONTENT.append(div)
 
-    obj.on('update', function () {
+    obj.on('change', function () {
       if(obj.get('__delete')) {
         div.remove()
-        obj.removeAllListeners('update')
+        obj.removeAllListeners('change')
       }
       span.text(obj.get('text'))
     })
@@ -8686,20 +10132,20 @@ function createChat (el, doc) {
           e.set('text', ntext.split(search).join(replace))
         }
       })
-    } else 
+    } else
       doc.set('_'+Date.now(), {text: this.value, type: 'message'})
     this.value = ''
   })
 }
 });
 
-require.define("/example/complex/mouses.js",function(require,module,exports,__dirname,__filename,process){/*
+require.define("/Documents/crdt/example/complex/mouses.js",function(require,module,exports,__dirname,__filename,process){/*
   show other mouses of other users.
 
   so that users don't feel lonely.
 */
 
-var crdt = require('crdt')
+var crdt = require('../../index')
 
 module.exports =
 function (doc) {
@@ -8725,13 +10171,13 @@ function (doc) {
 
   mice.on('add', function (m) {
     console.log('ADD', m)
-    var pointer = 
+    var pointer =
     $('<span class=pointer>' + m.id +'</span>')
       .css({position: 'absolute'})
 
     $('body').append(pointer)
 
-    m.on('update', function () {
+    m.on('change', function () {
       console.log(m.get('id'), m.get('x'), m.get('y'), m.get('in'))
       pointer.css({
         left: m.get('x')
@@ -8742,7 +10188,7 @@ function (doc) {
 } 
 });
 
-require.define("/example/complex/sets.js",function(require,module,exports,__dirname,__filename,process){var crdt = require('crdt')
+require.define("/Documents/crdt/example/complex/sets.js",function(require,module,exports,__dirname,__filename,process){var crdt = require('../../index')
 
 /*
   add some sets, that items can be dragged and dropped between,
@@ -8759,7 +10205,7 @@ function seqWidget( el, seq, template ) {
   el = $(el)
   var name = el.attr('id')
   
-  function update (r) { 
+  function update (r) {
     var li = $('#'+r.id)
     li = li.length ? li : $(template(r))
 
@@ -8826,7 +10272,7 @@ function (div, doc) {
       .append(text = $('<span>'+r.get('text')+'</span>'))
       .append(check = $('<input type=checkbox>'))
 
-    r.on('update', function () {
+    r.on('change', function () {
       text.text(r.get('text'))
       check.attr('checked', r.get('checked'))
     }) 
@@ -8847,7 +10293,7 @@ function (div, doc) {
   }
 
   function st (q) {
-    return $('<ul class=sortable id='+q.id+'>')
+    return $('<ul class=sortable id='+q.key+'>')
   }
 
   function addable (s, q) {
@@ -8898,7 +10344,7 @@ function (div, doc) {
 }
 });
 
-require.define("/example/complex/client.js",function(require,module,exports,__dirname,__filename,process){var crdt       = require('crdt')
+require.define("/Documents/crdt/example/complex/client.js",function(require,module,exports,__dirname,__filename,process){var crdt       = require('../../index')
 var reconnect  = require('reconnect/shoe')
 var MuxDemux   = require('mux-demux')
 var kv         = require('kv')('crdt_example')
@@ -8957,5 +10403,5 @@ sync(docs.todo, 'TODO2-')
 */
 
 });
-require("/example/complex/client.js");
+require("/Documents/crdt/example/complex/client.js");
 })();

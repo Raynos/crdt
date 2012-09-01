@@ -15,14 +15,18 @@
   },
   "dependencies": {
     "between": "0.0.0",
-    "scuttlebutt": "~2.2.0"
+    "scuttlebutt": "~2.2.0",
+    "delta-stream": "~1.1.1"
   },
   "devDependencies": {
     "it-is": "~1.0.1",
     "event-stream": "~3.0",
     "asynct": "~1.1",
     "kv": "~0.5",
-    "mux-demux": "~3.2"
+    "mux-demux": "~3.2",
+    "assertions": "~2.3.0",
+    "jquery-browserify": "~1.7.2",
+    "express": "~3.0.0rc4"
   },
   "optionalDependencies": {}
 }

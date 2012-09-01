@@ -2,57 +2,39 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 'use strict';
 
-var inherits     = require('util').inherits
-var EventEmitter = require('events').EventEmitter
+var Delta = require("delta-stream")
+
+Row.isRow = isRow
 
 module.exports = Row
 
-inherits(Row, EventEmitter)
-
 function Row (id) {
-  this.id = id
-  this.state = {id: id}
-  this.setMaxListeners(Infinity)
-}
+  var delta = Delta(id)
 
-Row.prototype.set = function (changes, v) {
-  if(arguments.length == 2) {
-    var k = changes 
-    changes = {}
-    changes[k] = v
+  delta._set = delta.set
+
+  delta.validate = function (changes) {
+    try {
+      delta.emit('validate', changes)
+      return true
+    } catch (e) {
+      console.error('validation', e.message)
+      return false
+    }
   }
 
-  if(changes.id && changes.id !== this.state.id)
-    throw new Error('id cannot be changed')
+  delta.set = function (key, value) {
+    var changes = key
+    if (typeof key === 'string') {
+      changes = {}
+      changes[key] = value
+    }
+    delta.emit('preupdate', changes)
+  }
 
-  this._set(changes, 'local')  
-  return this
+  return delta
 }
 
-Row.prototype.validate = function (changes) {
-  try {
-    this.emit('validate', changes)
-    return true
-  } catch (e) {
-    console.error('validation', e.message)
-    return false
-  } 
+function isRow(r) {
+    return r.set && r.get && r.validate && r._update
 }
-
-Row.prototype._set = function (changes, source) {
-
-  //the change is applied by the Doc!
-  this.emit('preupdate', changes, source)
-  return this
-}
-
-Row.prototype.get = function (key) {
-  if(key)
-    return this.state[key]
-  return this.state
-}
-
-Row.prototype.toJSON = function () {
-  return this.state
-}
-

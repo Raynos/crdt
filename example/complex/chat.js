@@ -1,4 +1,4 @@
-var crdt = require('crdt')
+var crdt = require('../../index')
 
 module.exports =
 
@@ -14,7 +14,7 @@ function createChat (el, doc) {
 
   messages.on('add', function (obj) {
     var div, span, a
-    div = 
+    div =
     $('<div class=line>')
       .append(span = $('<span class=message>'))
       .append(a = $('<a href=# class=del>x</a>')
@@ -25,10 +25,10 @@ function createChat (el, doc) {
 
     CONTENT.append(div)
 
-    obj.on('update', function () {
+    obj.on('change', function () {
       if(obj.get('__delete')) {
         div.remove()
-        obj.removeAllListeners('update')
+        obj.removeAllListeners('change')
       }
       span.text(obj.get('text'))
     })
@@ -53,7 +53,7 @@ function createChat (el, doc) {
           e.set('text', ntext.split(search).join(replace))
         }
       })
-    } else 
+    } else
       doc.set('_'+Date.now(), {text: this.value, type: 'message'})
     this.value = ''
   })

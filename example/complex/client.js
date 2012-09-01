@@ -1,4 +1,4 @@
-var crdt       = require('crdt')
+var crdt       = require('../../index')
 var reconnect  = require('reconnect/shoe')
 var MuxDemux   = require('mux-demux')
 var kv         = require('kv')('crdt_example')

@@ -10,10 +10,10 @@ exports['test'] = function (t) {
   function log(set) {
 
     set.on('add', function (row) {
-      console.log('add', set.value,'->', row.state)
+      console.log('add', set.value,'->', row.toJSON())
     })
     set.on('remove', function (row) {
-      console.log('rm', set.value,'->', row.state)
+      console.log('rm', set.value,'->', row.toJSON())
     })
 
   }

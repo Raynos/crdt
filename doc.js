@@ -55,15 +55,13 @@ function Doc (id) {
   this.setMaxListeners(Infinity)
   this.sets.setMaxListeners(Infinity)
   Scuttlebutt.call(this, id)
-
 }
 
 Doc.prototype.add = function (initial) {
-
   if(!initial.id)
     throw new Error('id is required')
   var r = this._add(initial.id, 'local')
-  r._set(initial, 'local')
+  r.set(initial)
   return r
 }
 
@@ -74,10 +72,10 @@ Doc.prototype._add = function (id, source) {
   if(this.rows[id])
     return this.rows[id]
 
-  var r = id instanceof Row ? id : new Row(id)
+  var r = Row.isRow(id) ? id : Row(id)
   this.rows[r.id] = r
 
-  function track (changes, source) {
+  function track (changes) {
 //    var update = [r.id, changes, u.timestamp(), doc.id]
     doc.localUpdate(r.id, changes)
   }
@@ -97,7 +95,8 @@ Doc.prototype.timeUpdated = function (row, key) {
 
 Doc.prototype.set = function (id, change) {
   var r = this._add(id, 'local')
-  return r.set(change)
+  r.set(change)
+  return r
 }
 
 /*
@@ -150,16 +149,14 @@ Doc.prototype.applyUpdate = function (update, source) {
 //  hang on, in the mean time, I will probably only be managing n < 10 sets. 
 //  at once, 
 
-  u.merge(row.state, changed)
   for(var k in changed)
-    this.sets.emit(k, row, changed) 
+    this.sets.emit(k, row, changed)
+
+  row._set(changed)
   
   if(!emit) return
   
   this.emit('_update', update)
-  row.emit('update', update, changed)
-  row.emit('changes', changes, changed)
-  row.emit('change', changed) //installing this in paralel, so tests still pass.
   //will depreciate the old way later.
   this.emit('update', update, source)   //rename this event to 'data' or 'diff'?
   this.emit('row_update', row)          //rename this event to 'update'

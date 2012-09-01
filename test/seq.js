@@ -39,9 +39,10 @@ exports['simple'] = function (t) {
     a.equal(seq.indexOf(id(A)), 1)
 
     seq.rm({id: 'c'})
+
     a.equal(seq.first(), A)
 
-    console.log(seq.toJSON())
+    //console.log(seq.toJSON())
     seq.push(C)
 
     a.strictEqual(seq.last().id,  C.id)
@@ -137,7 +138,7 @@ function sync(array, seq) {
     r[n] = function (i) {
       seq[n](/push|unshift/.test(n) ? i : id(i))
       array[n](i)
-      console.log(i)
+      //console.log(i)
       if(i) {
         a.equal(array.indexOf(i), seq.indexOf(i.id))
       }
@@ -167,7 +168,7 @@ exports.random = function (t) {
   while(l --) {
     var op = ['push','pop', 'shift', 'unshift'][~~(Math.random()*4)]
     var obj = {id: '_'+Math.random(), r: Math.random()}
-    console.log(op, obj, ary.length, l)
+    //console.log(op, obj, ary.length, l)
     try {
     s[op](obj)
     } catch (e) {

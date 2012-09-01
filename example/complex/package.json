@@ -10,7 +10,8 @@
     "domready": "~0.2.11"
   },
   "devDependencies": {
-    "tap": "0.3.0"
+    "tap": "0.3.0",
+    "domready": "~0.2.11"
   },
   "scripts": {
     "test": "tap test"

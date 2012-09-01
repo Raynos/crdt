@@ -64,7 +64,7 @@ exports.listen = function (t) {
 
   var random = Math.random()
   var thing = doc.get('thing')
-  thing.on('changes', function (r) {
+  thing.on('change:random', function (r) {
     a.equal(thing.get('random'), random)
     t.end()
   })

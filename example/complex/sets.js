@@ -1,4 +1,4 @@
-var crdt = require('crdt')
+var crdt = require('../../index')
 
 /*
   add some sets, that items can be dragged and dropped between,
@@ -15,7 +15,7 @@ function seqWidget( el, seq, template ) {
   el = $(el)
   var name = el.attr('id')
   
-  function update (r) { 
+  function update (r) {
     var li = $('#'+r.id)
     li = li.length ? li : $(template(r))
 
@@ -82,7 +82,7 @@ function (div, doc) {
       .append(text = $('<span>'+r.get('text')+'</span>'))
       .append(check = $('<input type=checkbox>'))
 
-    r.on('update', function () {
+    r.on('change', function () {
       text.text(r.get('text'))
       check.attr('checked', r.get('checked'))
     }) 
@@ -103,7 +103,7 @@ function (div, doc) {
   }
 
   function st (q) {
-    return $('<ul class=sortable id='+q.id+'>')
+    return $('<ul class=sortable id='+q.key+'>')
   }
 
   function addable (s, q) {

@@ -32,14 +32,14 @@ function Seq (doc, key, val) {
     if(!changes._sort) return
     sort(seq._array)
     //check if there is already an item with this sort key.
-    var prev = 
+    var prev =
     find(seq._array, function (other) {
       return other != row && other.get('_sort') == row.get('_sort')
     })
 
-    //nudge it forward if it has the same key.    
+    //nudge it forward if it has the same key.
     if(prev)
-      seq.insert(row, prev, seq.next(row)) 
+      seq.insert(row, prev, seq.next(row))
     else
       seq.emit('move', row)
   })
@@ -53,14 +53,14 @@ function Seq (doc, key, val) {
     if('string' === typeof obj)
       obj = doc.rows[obj]
 
-    var _sort = 
-       u.between(before, after ) 
+    var _sort =
+       u.between(before, after )
      + u.randstr(3) //add a random tail so it's hard
                     //to concurrently add two items with the
                     //same sort.
  
     var r, changes
-    if(obj instanceof Row) {
+    if(Row.isRow(obj)) {
       r = obj
       changes = {_sort: _sort}
       if(r.get(key) != val)
@@ -70,7 +70,7 @@ function Seq (doc, key, val) {
       obj._sort = _sort
       obj[key] = val
       r = doc.set(id(obj), obj)
-    } 
+    }
     sort(this._array)
     return r
   }
@@ -80,7 +80,7 @@ function toKey (key) {
 
   return (
      'string' === typeof key ? key 
-  :  key instanceof Row      ? key.get()._sort
+  :  Row.isRow(key)          ? key.get("_sort")
   :  key                     ? key._sort
   : null
   )

@@ -40,49 +40,61 @@ module.exports = Set
 
 //TODO check if any currently existing items should be in the set. currently, one must create the set before recieving anything.
 
-function Set(doc, key, value) {
+function Set(doc, masterKey, masterValue) {
   var array = this._array = []
   var rows = this.rows =  {}
   var set = this
 
   //DO NOT CHANGE once you have created the set.
-  this.key = key
-  this.value = value
+  this.key = masterKey
+  this.value = masterValue
 
   function add(row) {
+    // It doesnt have the masterKey prop on state at start
+    var hasKey = false
     array.push(row)
     rows[row.id] = row
     set.emit('add', row)
 
-    function remove (_, changed) {
-      if(row.state[key] === value)
-        return set.emit('changes', row, changed)
+    function remove (key, value) {
+      // once it has it we no longer need to assume it's set
+      if (key === masterKey) {
+        hasKey = true
+      }
+
+      // If it doesn't have the key yet, assume it's correct
+      if(row.get(masterKey) === masterValue || !hasKey) {
+        var changes = {}
+        changes[key] = value
+        return set.emit('changes', row, changes)
+      }
+
       delete rows[row.id]
       var i = array.indexOf(row)
       if(~i) array.splice(i, 1)
       else return 
       set.emit('remove', row)
-      row.removeListener('changes', remove)
+      row.removeListener('change', remove)
     }
 
-    row.on('changes', remove)
- 
+    row.on('change', remove)
   }
 
-  doc.sets.on(key, function (row, changed) {
-    if(changed[key] !== value) return 
+  doc.sets.on(masterKey, function (row, changed) {
+    if(changed[masterKey] !== masterValue) return
     add(row)
   })
 
   this.rm = this.remove = function (row) {
     row = this.get(row) 
     if(!row) return
-    return row.set(key, null)
+    row.set(masterKey, null)
+    return row
   }
 
   for(var id in doc.rows) {
     var row = doc.get(id)
-    if(row.get(key) === value) add(row) 
+    if(row.get(masterKey) === masterValue) add(row) 
   }
 
   this.setMaxListeners(Infinity)
@@ -95,7 +107,7 @@ Set.prototype.asArray = function () {
 
 Set.prototype.toJSON = function () {
   return this._array.map(function (e) {
-    return e.state
+    return e.toJSON()
   }).sort(function (a, b) {
     return u.strord(a._sort || a.id, b._sort || b.id)
   })
