@@ -16,7 +16,7 @@
   "dependencies": {
     "between": "0.0.0",
     "scuttlebutt": "~2.2.0",
-    "delta-stream": "~1.1.1"
+    "delta-stream": "~1.2.0"
   },
   "devDependencies": {
     "it-is": "~1.0.1",
