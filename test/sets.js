@@ -60,23 +60,24 @@ exports['test - post'] = function (t) {
   console.log(set.toJSON())
   console.log(set2.toJSON())
 
-  a.deepEqual(set.toJSON(), [
-    {id: 'b', type: 'thing', what: 5},
-    {id: 'c', type: 'thing', what: 9},
-  ])
+  process.nextTick(function () {
+    a.deepEqual(set.toJSON(), [
+      {id: 'b', type: 'thing', what: 5},
+      {id: 'c', type: 'thing', what: 9},
+    ])
 
-  a.deepEqual(set2.toJSON(), [
-    {id: 'a', type: 'other', what: 7}
-  ])
+    a.deepEqual(set2.toJSON(), [
+      {id: 'a', type: 'other', what: 7}
+    ])
 
-  console.log('passed')
-  t.end()
+    console.log('passed')
+    t.end()
+  })
 }
 
 exports['test - filters'] = function (t) {
-  console.log("HELLO")
-
   var doc = new crdt.Doc()
+  console.log("# Filters")
 
   var set = doc.createSet(function (state) {
     return state.type === 'thing' && state.what <= 5
@@ -96,14 +97,43 @@ exports['test - filters'] = function (t) {
   doc.add({id: 'a', type: 'other', what: 7})
   doc.add({id: 'c', type: 'thing', what: 9})
 
-  a.deepEqual(set.toJSON(), [
-    { id: 'b', type: 'thing', what: 5 }
-  ])
+  process.nextTick(function () {
+    a.deepEqual(set.toJSON(), [
+      { id: 'b', type: 'thing', what: 5 }
+    ])
 
-  a.deepEqual(set2.toJSON(), [])
+    a.deepEqual(set2.toJSON(), [])
 
-  console.log("passed")
-  t.end()
+    console.log("passed")
+    t.end()
+  })
+}
+
+exports['test - create set later'] = function (t) {
+  var doc = new crdt.Doc()
+
+  console.log("LATER")
+
+  doc.add({id: 'a', type: 'thing', what: 3})
+  doc.add({id: 'b', type: 'thing', what: 5})
+  doc.add({id: 'a', type: 'other', what: 7})
+  doc.add({id: 'c', type: 'thing', what: 9})
+
+  var set = doc.createSet("type", "thing")
+  var states = []
+
+  set.on("add", function (row, state) {
+    states.push(row.state)
+  })
+
+  process.nextTick(function () {
+    a.deepEqual(states, [
+      { id: 'b', type: 'thing', what: 5 },
+      { id: 'c', type: 'thing', what: 9 }
+    ])
+
+    t.end()
+  })
 }
 
 function log(set) {
@@ -116,3 +146,4 @@ function log(set) {
   })
 
 }
+
