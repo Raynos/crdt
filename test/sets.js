@@ -97,16 +97,14 @@ exports['test - filters'] = function (t) {
   doc.add({id: 'a', type: 'other', what: 7})
   doc.add({id: 'c', type: 'thing', what: 9})
 
-  process.nextTick(function () {
-    a.deepEqual(set.toJSON(), [
-      { id: 'b', type: 'thing', what: 5 }
-    ])
+  a.deepEqual(set.toJSON(), [
+    { id: 'b', type: 'thing', what: 5 }
+  ])
 
-    a.deepEqual(set2.toJSON(), [])
+  a.deepEqual(set2.toJSON(), [])
 
-    console.log("passed")
-    t.end()
-  })
+  console.log("passed")
+  t.end()
 }
 
 exports['test - create set later'] = function (t) {
