@@ -120,7 +120,7 @@ exports['test - create set later'] = function (t) {
   var set = doc.createSet("type", "thing")
   var states = []
 
-  set.on("add", function (row, state) {
+  set.every(function (row, state) {
     states.push(row.state)
   })
 

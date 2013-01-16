@@ -107,20 +107,22 @@ function Set(doc, key, value) {
     }
   }
 
-  // add rows on nextTick so that user can bind listeners to set
-  process.nextTick(function () {
-    for(var id in doc.rows) {
-      var row = doc.get(id)
-      if (key && row.get(key) === value) {
-        add(row)
-      } else if (filter && filter(row.state)) {
-        add(row)
-      }
+  for(var id in doc.rows) {
+    var row = doc.get(id)
+    if (key && row.get(key) === value) {
+      add(row)
+    } else if (filter && filter(row.state)) {
+      add(row)
     }
-  })
+  }
 
   this.setMaxListeners(Infinity)
 
+}
+
+Set.prototype.every = function (callback) {
+  this.forEach(callback)
+  this.on("add", callback)
 }
 
 Set.prototype.asArray = function () {
