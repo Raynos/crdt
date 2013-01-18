@@ -120,7 +120,7 @@ function Set(doc, key, value) {
 
 }
 
-Set.prototype.every = function (callback) {
+Set.prototype.onEach = function (callback) {
   this.forEach(callback)
   this.on("add", callback)
 }
