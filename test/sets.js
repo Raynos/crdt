@@ -60,19 +60,17 @@ exports['test - post'] = function (t) {
   console.log(set.toJSON())
   console.log(set2.toJSON())
 
-  process.nextTick(function () {
-    a.deepEqual(set.toJSON(), [
-      {id: 'b', type: 'thing', what: 5},
-      {id: 'c', type: 'thing', what: 9},
-    ])
+  a.deepEqual(set.toJSON(), [
+    {id: 'b', type: 'thing', what: 5},
+    {id: 'c', type: 'thing', what: 9},
+  ])
 
-    a.deepEqual(set2.toJSON(), [
-      {id: 'a', type: 'other', what: 7}
-    ])
+  a.deepEqual(set2.toJSON(), [
+    {id: 'a', type: 'other', what: 7}
+  ])
 
-    console.log('passed')
-    t.end()
-  })
+  console.log('passed')
+  t.end()
 }
 
 exports['test - filters'] = function (t) {
