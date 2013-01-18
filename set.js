@@ -56,10 +56,6 @@ function Set(doc, key, value) {
   }
 
   function add(row) {
-    if (rows[row.id]) {
-      return
-    }
-
     array.push(row)
     rows[row.id] = row
     set.emit('add', row)
